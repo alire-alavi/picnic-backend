@@ -1,5 +1,7 @@
+#![allow(unused)]
+mod db;
+mod models;
 use std::net::SocketAddr;
-use serde::Deserialize;
 
 use axum::{response::{Html, IntoResponse}, routing::get, Router};
 use tokio::net::TcpListener;
