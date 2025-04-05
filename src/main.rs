@@ -2,12 +2,15 @@
 mod db;
 mod models;
 use std::net::SocketAddr;
+use db::client::db;
 
 use axum::{response::{Html, IntoResponse}, routing::get, Router};
 use tokio::net::TcpListener;
+use dotenv::dotenv;
 
 #[tokio::main]
 async fn main() {
+    dotenv().ok();
     let routes_hello = Router::new().route("/hello", get(handler_hello));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
