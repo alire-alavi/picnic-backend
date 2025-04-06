@@ -1,5 +1,3 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 CREATE TABLE IF NOT EXISTS products (
     id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name                TEXT NOT NULL,
@@ -17,6 +15,6 @@ CREATE TABLE IF NOT EXISTS products (
 );
 
 -- Index on slug for faster lookups
-CREATE INDEX IF NOT EXISTS idx_product_slug ON product(slug);
-CREATE INDEX IF NOT EXISTS idx_product_sku ON product(sku);
+CREATE INDEX IF NOT EXISTS idx_product_slug ON products(slug);
+CREATE INDEX IF NOT EXISTS idx_product_sku ON products(sku);
 
