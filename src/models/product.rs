@@ -31,4 +31,5 @@ pub struct NewProduct {
     pub image_url: Option<String>,
     pub meta_title: Option<String>,
     pub meta_description: Option<String>,
+    pub category_id: i32,
 } 
