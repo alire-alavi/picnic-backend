@@ -18,7 +18,7 @@ pub struct Product {
     pub meta_description: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
-    pub category_id: i32, 
+    pub category: Category, 
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

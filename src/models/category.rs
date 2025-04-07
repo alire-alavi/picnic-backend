@@ -8,11 +8,10 @@ pub struct Category {
     pub name: String,
     pub slug: String,
     pub description: String,
-    pub stock_quantity: i32,
     pub image_url: Option<String>,
     pub meta_title: Option<String>,
     pub meta_description: Option<String>,
-    pub keywords: Option<string>,
+    pub keywords: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
