@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS categories (
     slug                TEXT NOT NULL UNIQUE,
     description         TEXT NOT NULL,
     image_url           TEXT,
-    parent_id           INTEGER REFERENCES categories(id),
+    parent_id           UUID REFERENCES categories(id),
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     meta_title          TEXT,

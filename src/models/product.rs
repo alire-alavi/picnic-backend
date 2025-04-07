@@ -1,6 +1,7 @@
 use uuid::Uuid;
 use sqlx::FromRow;
 use serde::{Deserialize, Serialize};
+use super::Category;
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Product {
@@ -31,5 +32,5 @@ pub struct NewProduct {
     pub image_url: Option<String>,
     pub meta_title: Option<String>,
     pub meta_description: Option<String>,
-    pub category_id: i32,
+    pub category: Category,
 } 

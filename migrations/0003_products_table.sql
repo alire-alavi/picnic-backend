@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS products (
     stock_quantity      INTEGER NOT NULL,
     sku                 VARCHAR(64) NOT NULL,
     image_url           TEXT,
-    category_id         INTEGER REFERENCES categories(id),
+    category_id         UUID REFERENCES categories(id),
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     meta_title          TEXT,
