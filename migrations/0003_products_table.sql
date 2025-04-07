@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS products (
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     meta_title          TEXT,
     meta_description    TEXT,
-    keywords            TEXT,
+    keywords            TEXT
 );
 
 -- Index on slug for faster lookups
