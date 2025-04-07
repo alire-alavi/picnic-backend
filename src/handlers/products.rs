@@ -1,6 +1,8 @@
 use crate::models::product::Product;
+use crate::db::client::db;
 use axum::{
     response::{IntoResponse, Response},
+    extract::{Path},
     http::StatusCode,
     Json,
 };
@@ -23,17 +25,18 @@ impl IntoResponse for ProductError {
     }
 }
 
-pub async fn handler_get_product(slug: String) -> Result<Json<Product>, ProductError> {
+pub async fn handler_get_product(slug: Path<String>) -> Result<Json<Product>, ProductError> {
     let pool = db().await.map_err(|e| ProductError::DatabaseError(e.to_string()))?;
 
     let product = sqlx::query_as!(
         Product,
         r#"
-        SELECT id, name, slug, description, price, stock_quantity, image_url, created_at, updated_at
-        FROM products
-        WHERE slug = $1
+        SELECT c.id, c.name, c.slug, c.description, c.image_url
+        FROM categories c
+        JOIN products p ON c.id = p.category_id
+        WHERE p.slug = $1
         "#,
-        slug
+        slug,
     )
     .fetch_optional(&pool)
     .await
@@ -44,3 +47,4 @@ pub async fn handler_get_product(slug: String) -> Result<Json<Product>, ProductE
         None => Err(ProductError::NotFound),
     }
 }
+
