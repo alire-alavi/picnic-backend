@@ -25,15 +25,31 @@ impl IntoResponse for ProductError {
     }
 }
 
-pub async fn handler_get_product(slug: Path<String>) -> Result<Json<Product>, ProductError> {
+pub async fn handler_get_product(Path(slug): Path<String>) -> Result<Json<Product>, ProductError> {
     let pool = db().await.map_err(|e| ProductError::DatabaseError(e.to_string()))?;
 
     let product = sqlx::query_as!(
         Product,
         r#"
-        SELECT c.id, c.name, c.slug, c.description, c.image_url
-        FROM categories c
-        JOIN products p ON c.id = p.category_id
+        SELECT 
+            p.id, p.name, p.slug, p.description, p.price, p.price_span, p.whole_price,
+            p.stock_quantity, p.sku, p.image_url, 
+            p.created_at, p.updated_at, p.meta_title, p.meta_description, p.keywords,
+            jsonb_build_object(
+                'id', c.id,
+                'name', c.name,
+                'slug', c.slug,
+                'description', c.description,
+                'image_url', c.image_url,
+                'parent_id', c.parent_id,
+                'created_at', c.created_at,
+                'updated_at', c.updated_at,
+                'meta_title', c.meta_title,
+                'meta_description', c.meta_description,
+                'keywords', c.keywords
+            ) AS category
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
         WHERE p.slug = $1
         "#,
         slug,

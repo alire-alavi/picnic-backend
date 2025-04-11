@@ -1,6 +1,7 @@
 use uuid::Uuid;
 use sqlx::FromRow;
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Category {
@@ -15,3 +16,4 @@ pub struct Category {
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
+
