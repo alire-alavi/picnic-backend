@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS products (
     slug                TEXT NOT NULL UNIQUE,
     description         TEXT NOT NULL,
     price               DOUBLE PRECISION NOT NULL,
+    price_span          VARCHAR(512),
     whole_price         DOUBLE PRECISION,
     stock_quantity      INTEGER NOT NULL,
     sku                 VARCHAR(64) NOT NULL,
@@ -11,7 +12,7 @@ CREATE TABLE IF NOT EXISTS products (
     category_id         UUID REFERENCES categories(id),
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    meta_title          TEXT,
+    meta_title          VARCHAR(2048),
     meta_description    TEXT,
     keywords            TEXT
 );
