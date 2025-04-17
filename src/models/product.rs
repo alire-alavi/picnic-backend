@@ -1,6 +1,7 @@
 use uuid::Uuid;
 use sqlx::FromRow;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use super::Category;
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
@@ -20,7 +21,7 @@ pub struct Product {
     pub keywords: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
-    pub category: Category,
+    pub category: Option<Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -57,8 +57,6 @@ pub async fn handler_get_product(Path(slug): Path<String>, State(pool): State<Pg
     .await
     .map_err(|_| ProductError::NotFound)?;
     
-    let category: Option<Category> = record.category
-        .map(|value| serde_json::from_value(value).unwrap());
     
     let product = Product {
         id: record.id,
@@ -76,7 +74,7 @@ pub async fn handler_get_product(Path(slug): Path<String>, State(pool): State<Pg
         keywords: record.keywords,
         created_at: record.created_at,
         updated_at: record.updated_at,
-        category: category.unwrap()
+        category: record.category,
     };
 
     Ok(Json(product))
