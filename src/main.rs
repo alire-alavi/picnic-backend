@@ -2,6 +2,7 @@
 mod db;
 mod models;
 mod handlers;
+pub mod web;
 use std::net::SocketAddr;
 use db::client::db;
 use handlers::products::handler_get_product;
@@ -16,7 +17,8 @@ async fn main() {
     dotenv().ok();
     let routes_hello = Router::new()
         .route("/hello", get(handler_hello))
-        .route("/products/{slug}", get(handler_get_product));
+        .route("/products/{slug}", get(handler_get_product))
+        .with_state(db().await.unwrap());
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     println!("--> LISTENING on {addr}\n");
