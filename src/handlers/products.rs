@@ -1,4 +1,5 @@
-use crate::models::product::Product;
+use crate::models::Product;
+use crate::models::Category;
 use crate::db::client::db;
 use axum::{
     response::{IntoResponse, Response},
@@ -25,11 +26,9 @@ impl IntoResponse for ProductError {
     }
 }
 
-pub async fn handler_get_product(Path(slug): Path<String>) -> Result<Json<Product>, ProductError> {
-    let pool = db().await.map_err(|e| ProductError::DatabaseError(e.to_string()))?;
+pub async fn handler_get_product(Path(slug): Path<String>, State(pool): State<PgPool>) -> Result<Json<Product>, ProductError> {
 
-    let product = sqlx::query_as!(
-        Product,
+    let record = sqlx::query!(
         r#"
         SELECT 
             p.id, p.name, p.slug, p.description, p.price, p.price_span, p.whole_price,
@@ -54,13 +53,32 @@ pub async fn handler_get_product(Path(slug): Path<String>) -> Result<Json<Produc
         "#,
         slug,
     )
-    .fetch_optional(&pool)
+    .fetch_one(&pool)
     .await
-    .map_err(|e| ProductError::DatabaseError(e.to_string()))?;
+    .map_err(|_| ProductError::NotFound)?;
+    
+    let category: Option<Category> = record.category
+        .map(|value| serde_json::from_value(value).unwrap());
+    
+    let product = Product {
+        id: record.id,
+        name: record.name,
+        slug: record.slug,
+        description: record.description,
+        price: record.price,
+        price_span: record.price_span,
+        whole_price: record.whole_price,
+        stock_quantity: record.stock_quantity,
+        sku: record.sku,
+        image_url: record.image_url,
+        meta_title: record.meta_title,
+        meta_description: record.meta_description,
+        keywords: record.keywords,
+        created_at: record.created_at,
+        updated_at: record.updated_at,
+        category: category.unwrap()
+    };
 
-    match product {
-        Some(product) => Ok(Json(product)),
-        None => Err(ProductError::NotFound),
-    }
+    Ok(Json(product))
 }
 
