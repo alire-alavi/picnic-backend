@@ -3,7 +3,7 @@ use crate::models::Category;
 use crate::db::client::db;
 use axum::{
     response::{IntoResponse, Response},
-    extract::{Path},
+    extract::{Path, State},
     http::StatusCode,
     Json,
 };
