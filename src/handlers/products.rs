@@ -1,3 +1,4 @@
+use crate::models::product::ProductFromQuery;
 use crate::models::Product;
 use crate::models::Category;
 use crate::db::client::db;
@@ -28,55 +29,46 @@ impl IntoResponse for ProductError {
 
 pub async fn handler_get_product(Path(slug): Path<String>, State(pool): State<PgPool>) -> Result<Json<Product>, ProductError> {
 
-    let record = sqlx::query!(
+    let record: ProductFromQuery = sqlx::query_as::<_, ProductFromQuery>(
         r#"
         SELECT 
-            p.id, p.name, p.slug, p.description, p.price, p.price_span, p.whole_price,
-            p.stock_quantity, p.sku, p.image_url, 
-            p.created_at, p.updated_at, p.meta_title, p.meta_description, p.keywords,
-            jsonb_build_object(
-                'id', c.id,
-                'name', c.name,
-                'slug', c.slug,
-                'description', c.description,
-                'image_url', c.image_url,
-                'parent_id', c.parent_id,
-                'created_at', c.created_at,
-                'updated_at', c.updated_at,
-                'meta_title', c.meta_title,
-                'meta_description', c.meta_description,
-                'keywords', c.keywords
-            ) AS category
+            p.id, 
+            p.name, 
+            p.slug, 
+            p.description, 
+            p.price, 
+            p.price_span, 
+            p.whole_price,
+            p.stock_quantity, 
+            p.sku, 
+            p.image_url, 
+            p.meta_title, 
+            p.meta_description, 
+            p.keywords,
+            p.created_at, 
+            p.updated_at,
+        
+            c.id AS category_id,
+            c.name AS category_name,
+            c.slug AS category_slug,
+            COALESCE(c.description, '') AS category_description,
+            c.image_url AS category_image_url,
+            c.meta_title AS category_meta_title,
+            c.meta_description AS category_meta_description,
+            c.keywords AS category_keywords,
+            c.created_at AS category_created_at,
+            c.updated_at AS category_updated_at
+        
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
         WHERE p.slug = $1
         "#,
-        slug,
     )
+    .bind(slug)
     .fetch_one(&pool)
     .await
     .map_err(|_| ProductError::NotFound)?;
-    
-    
-    let product = Product {
-        id: record.id,
-        name: record.name,
-        slug: record.slug,
-        description: record.description,
-        price: record.price,
-        price_span: record.price_span,
-        whole_price: record.whole_price,
-        stock_quantity: record.stock_quantity,
-        sku: record.sku,
-        image_url: record.image_url,
-        meta_title: record.meta_title,
-        meta_description: record.meta_description,
-        keywords: record.keywords,
-        created_at: record.created_at,
-        updated_at: record.updated_at,
-        category: record.category,
-    };
 
-    Ok(Json(product))
+    Ok(Json(record.into_product()))
 }
 
