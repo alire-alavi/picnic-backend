@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String    @id @default(uuid())
+  email       String    @unique
+  phoneNumber String
+  name        String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  orders      Order[]
+  addresses   Address[]
+  profile     Profile?
+}
+
+model Profile {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  company      String?
+  companyVat   String?
+  companyPhone String?
+  bio          String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model PricePlan {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Product {
+  id              String      @id @default(uuid())
+  categoryId      String
+  category        Category    @relation(fields: [categoryId], references: [id])
+  seo_title       String
+  seo_description String
+  seo_keywords    String
+  name            String
+  slug            String      @unique
+  price           Decimal     @db.Decimal(10, 2)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  comments        Comment[]
+  orderItems      OrderItem[]
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  content   String
+  author    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+}
+
+model OrderItem {
+  id       String  @id @default(uuid())
+  itemId   String
+  item     Product @relation(fields: [itemId], references: [id])
+  quantity Int
+  price    Decimal @db.Decimal(10, 2)
+  order    Order?  @relation(fields: [orderId], references: [id])
+  orderId  String?
+}
+
+enum OrderStatus {
+  PENDING
+  SUBMITTED
+  PAYMENT_REQUIRED
+  PRODUCTION
+  PRODUCTION_COMPLETE
+  PROCESSING
+  SHIPPING
+  CANCELLED
+  COMPLETED
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  userId      String
+  orderStatus OrderStatus @default(PAYMENT_REQUIRED)
+  user        User        @relation(fields: [userId], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+}
+
+enum AddressType {
+  BILLING
+  SHIPPING
+}
+
+model Address {
+  id        String      @id @default(uuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  street    String
+  type      AddressType
+  city      String
+  state     String
+  zipCode   String
+  country   String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
