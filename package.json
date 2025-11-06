@@ -8,14 +8,14 @@
   "scripts": {
     "build": "npx prisma generate && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-  "format:all": "prettier --write .",
+    "format:all": "prettier --write .",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-  "prepare": "husky",
-  "format:unstaged": "sh scripts/format-unstaged.sh",
+    "prepare": "husky",
+    "format:unstaged": "sh scripts/format-unstaged.sh",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -28,9 +28,8 @@
     "prisma:studio": "prisma studio"
   },
   "dependencies": {
-    "@apollo/server": "^5.1.0",
     "@as-integrations/express5": "^1.1.2",
-    "@nestjs/apollo": "^13.2.1",
+    "@graphql-yoga/nestjs": "^3.17.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -40,6 +39,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "graphql": "^16.12.0",
+    "graphql-yoga": "^5.16.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
