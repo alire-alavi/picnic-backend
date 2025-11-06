@@ -1,0 +1,19 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Product {
+  id: ID!
+  name: String!
+}
+
+type Query {
+  products(productFilter: ProductsFilterInput!): [Product!]!
+  product(id: String!): Product!
+}
+
+input ProductsFilterInput {
+  priceLte: Float!
+  priceGte: Float!
+  category: String!
+}
