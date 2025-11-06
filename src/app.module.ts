@@ -1,13 +1,13 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { Request, Response } from 'express';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { HealthModule } from './health/health.module';
-import { ProductsModule } from './products/products.module';
-import { PrismaModule } from './prisma/prisma.module';
+import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
+import { GraphQLModule } from '@nestjs/graphql'
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo'
+import { Request, Response } from 'express'
+import { AppController } from './app.controller'
+import { AppService } from './app.service'
+import { HealthModule } from './health/health.module'
+import { ProductsModule } from './products/products.module'
+import { PrismaModule } from './prisma/prisma.module'
 
 @Module({
   imports: [
@@ -16,7 +16,10 @@ import { PrismaModule } from './prisma/prisma.module';
       autoSchemaFile: 'schema.gql',
       driver: ApolloDriver,
       playground: true,
-      context: ({ req, res }: { req: Request; res: Response }) => ({ req, res }),
+      context: ({ req, res }: { req: Request; res: Response }) => ({
+        req,
+        res,
+      }),
     }),
     HealthModule,
     ProductsModule,
@@ -25,4 +28,4 @@ import { PrismaModule } from './prisma/prisma.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
