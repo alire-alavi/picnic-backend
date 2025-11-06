@@ -5,15 +5,20 @@ import { Product } from './models/product.model'
 
 @Resolver()
 export class ProductsResolver {
-    constructor(private readonly productsService: ProductsService) { }
+  constructor(private readonly productsService: ProductsService) { }
 
-    @Query(() => [Product], { name: 'products' })
-    async getProducts(@Args('productFilter') filter: ProductsFilterInput) {
-        return this.productsService.list({ category: filter.category })
-    }
+  @Query(() => [Product], { name: 'products' })
+  async getProducts(
+    @Args('productFilter', { type: () => ProductsFilterInput, nullable: true })
+    filter?: ProductsFilterInput,
+  ) {
+    return this.productsService.list(
+      filter ? { category: filter.category } : {},
+    )
+  }
 
-    @Query(() => Product, { name: 'product' })
-    async getSingleProduct(@Args('id', { type: () => String }) id: string) {
-        return this.productsService.getById(id)
-    }
+  @Query(() => Product, { name: 'product' })
+  async getSingleProduct(@Args('id', { type: () => String }) id: string) {
+    return this.productsService.getById(id)
+  }
 }
