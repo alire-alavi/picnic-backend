@@ -49,6 +49,7 @@ parcel-cache/
 # Docker / serverless
 .serverless/
 docker-compose.override.yml
+vols/
 
 # Misc
 *.local
