@@ -8,10 +8,12 @@ import { HealthModule } from './health/health.module'
 import { ProductsModule } from './products/products.module'
 import { PrismaModule } from './prisma/prisma.module'
 import { YogaDriver, YogaDriverConfig } from '@graphql-yoga/nestjs'
+import { StorageModule } from './storage/storage.module'
+import { UsersModule } from './users/users.module'
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    ConfigModule.forRoot({ isGlobal: true }),
     GraphQLModule.forRoot<YogaDriverConfig>({
       driver: YogaDriver,
       autoSchemaFile: 'schema.gql',
@@ -23,6 +25,8 @@ import { YogaDriver, YogaDriverConfig } from '@graphql-yoga/nestjs'
     HealthModule,
     ProductsModule,
     PrismaModule,
+    StorageModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
