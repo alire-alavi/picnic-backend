@@ -1,22 +1,30 @@
-import { registerEnumType } from '@nestjs/graphql'
+import { AbstractModel } from '@picnic/utils'
+import { Field, ObjectType } from '@nestjs/graphql'
+import { AddressType } from './user.enums'
 
-export enum AddressType {
-  BILLING = 'BILLING',
-  SHIPPING = 'SHIPPING',
+@ObjectType()
+export class Address extends AbstractModel {
+    @Field()
+    street: string
+
+    @Field(() => AddressType)
+    type: AddressType
+
+    @Field()
+    city: string
+
+    @Field()
+    state: string
+
+    @Field()
+    zipCode: string
+
+    @Field()
+    country: string
+
+    @Field()
+    createdAt: string
+
+    @Field()
+    updatedAt: string
 }
-
-export enum OrderStatus {
-  PENDING = 'PENDING',
-  SUBMITTED = 'SUBMITTED',
-  PAYMENT_REQUIRED = 'PAYMENT_REQUIRED',
-  PRODUCTION = 'PRODUCTION',
-  PRODUCTION_COMPLETE = 'PRODUCTION_COMPLETE',
-  PROCESSING = 'PROCESSING',
-  SHIPPING = 'SHIPPING',
-  CANCELLED = 'CANCELLED',
-  COMPLETED = 'COMPLETED',
-}
-
-registerEnumType(AddressType, { name: 'AddressType' })
-registerEnumType(OrderStatus, { name: 'OrderStatus' })
-
