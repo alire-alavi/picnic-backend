@@ -8,15 +8,16 @@ datasource db {
 }
 
 model User {
-  id          String    @id @default(uuid())
-  email       String    @unique
-  phoneNumber String
-  name        String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  orders      Order[]
-  addresses   Address[]
-  profile     Profile?
+  id           String    @id @default(uuid())
+  email        String?   @unique
+  phoneNumber  String?
+  passwordHash String?
+  name         String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  orders       Order[]
+  addresses    Address[]
+  profile      Profile?
 }
 
 model Profile {
