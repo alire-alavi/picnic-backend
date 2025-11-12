@@ -7,6 +7,81 @@ type Product {
   name: String!
 }
 
+type Address {
+  id: ID!
+  street: String!
+  type: AddressType!
+  city: String!
+  state: String!
+  zipCode: String!
+  country: String!
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum AddressType {
+  BILLING
+  SHIPPING
+}
+
+type Profile {
+  id: ID!
+  company: String
+  companyVat: String
+  companyPhone: String
+  bio: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Order {
+  id: ID!
+  orderStatus: OrderStatus!
+  orderItems: [OrderItem!]!
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum OrderStatus {
+  PENDING
+  SUBMITTED
+  PAYMENT_REQUIRED
+  PRODUCTION
+  PRODUCTION_COMPLETE
+  PROCESSING
+  SHIPPING
+  CANCELLED
+  COMPLETED
+}
+
+type OrderItem {
+  id: ID!
+  quantity: Float!
+  price: String!
+}
+
+type User {
+  id: ID!
+  email: String
+  phoneNumber: String
+  name: String
+  createdAt: String!
+  updatedAt: String!
+  addresses: [Address!]!
+  orders: [Order!]!
+  profile: Profile
+}
+
+type AuthLoginResponse {
+  accessToken: String!
+}
+
+type SendOtpResponse {
+  success: Boolean!
+  phoneNumber: String!
+  error: String
+}
+
 type Query {
   products(productFilter: ProductsFilterInput): [Product!]!
   product(id: String!): Product!
@@ -16,4 +91,17 @@ input ProductsFilterInput {
   priceLte: Float
   priceGte: Float
   category: String
+}
+
+type Mutation {
+  createUser(input: CreateUserInput!): User!
+  loginWithPassword(email: String!, password: String!): AuthLoginResponse!
+  loginWithPhoneNumber(phoneNumber: String!): SendOtpResponse!
+}
+
+input CreateUserInput {
+  email: String
+  phoneNumber: String
+  name: String
+  password: String
 }

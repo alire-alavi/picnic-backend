@@ -6,10 +6,10 @@ import { Order } from './order.model'
 
 @ObjectType()
 export class User extends AbstractModel {
-  @Field()
-  email: string
-  @Field()
-  phoneNumber: string
+  @Field({ nullable: true })
+  email?: string
+  @Field({ nullable: true })
+  phoneNumber?: string
   @Field({ nullable: true })
   name?: string
   @Field()

@@ -11,6 +11,7 @@ import { YogaDriver, YogaDriverConfig } from '@graphql-yoga/nestjs'
 import { StorageModule } from './storage/storage.module'
 import { UsersModule } from './users/users.module'
 import { AuthModule } from './auth/auth.module';
+import { SmsModule } from './sms/sms.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { AuthModule } from './auth/auth.module';
     StorageModule,
     UsersModule,
     AuthModule,
+    SmsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
