@@ -85,7 +85,6 @@ export class AuthService {
     if (!phoneNumber)
       return { success: false, error: 'phoneNumber is required' }
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
-    // TODO: persist OTP with TTL associated with phoneNumber for later verification
 
     const provider = (this.config.get<string>('SMS_PROVIDER') ||
       'kavenegar') as 'kavenegar'
