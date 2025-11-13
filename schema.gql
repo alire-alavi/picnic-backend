@@ -97,6 +97,7 @@ type Mutation {
   createUser(input: CreateUserInput!): User!
   loginWithPassword(email: String!, password: String!): AuthLoginResponse!
   loginWithPhoneNumber(phoneNumber: String!): SendOtpResponse!
+  validateOtpAttempt(phoneNumber: String!, code: String!): AuthLoginResponse!
 }
 
 input CreateUserInput {

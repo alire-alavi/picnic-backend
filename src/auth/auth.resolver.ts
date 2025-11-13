@@ -1,6 +1,6 @@
 import { Resolver, Mutation, Args, ObjectType, Field } from '@nestjs/graphql'
 import { JwtService } from '@nestjs/jwt'
-import { BadRequestException } from '@nestjs/common'
+import { BadRequestException, UnauthorizedException } from '@nestjs/common'
 import { AuthService } from './auth.service'
 
 @ObjectType()
@@ -26,14 +26,15 @@ export class AuthResolver {
   constructor(
     private jwt: JwtService,
     private authService: AuthService,
-  ) { }
+  ) {}
 
   @Mutation(() => AuthLoginResponse, { name: 'loginWithPassword' })
   async loginWithPassword(
     @Args('email') email: string,
     @Args('password') password: string,
   ): Promise<AuthLoginResponse> {
-    if (!email || !password) throw new BadRequestException('Invalid credentials')
+    if (!email || !password)
+      throw new BadRequestException('Invalid credentials')
     const user = await this.authService.loginWithPassword({ email, password })
     if (!user) throw new BadRequestException('Invalid credentials')
     const payload = { sub: user.id, email: user.email }
@@ -52,6 +53,24 @@ export class AuthResolver {
       success: response.success,
       error: response.error,
       phoneNumber: phoneNumber,
+    }
+  }
+
+  @Mutation(() => AuthLoginResponse, { name: 'validateOtpAttempt' })
+  async validateOtpAttempt(
+    @Args('phoneNumber') phoneNumber: string,
+    @Args('code') code: string,
+  ): Promise<AuthLoginResponse> {
+    const response = await this.authService.loginWithOtp({
+      phoneNumber,
+      otp: code,
+    })
+    if (response) {
+      const payload = { sub: response.id, email: response.email }
+      const accessToken = await this.jwt.signAsync(payload)
+      return { accessToken }
+    } else {
+      throw new UnauthorizedException('Invalid login attempt')
     }
   }
 }
