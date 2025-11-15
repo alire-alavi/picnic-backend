@@ -7,17 +7,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserStatus {
+  ACTIVE
+  DISABLED
+  BANNED
+  FLAGGED
+  INCOMPLETE
+}
+
 model User {
-  id           String    @id @default(uuid())
-  email        String?   @unique
-  phoneNumber  String?
-  passwordHash String?
-  name         String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  orders       Order[]
-  addresses    Address[]
-  profile      Profile?
+  id            String     @id @default(uuid())
+  email         String?    @unique
+  phoneNumber   String?
+  passwordHash  String?
+  name          String?
+  preferences   Json?
+  profileStatus UserStatus @default(INCOMPLETE)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  orders        Order[]
+  addresses     Address[]
+  profile       Profile?
 }
 
 model Profile {
