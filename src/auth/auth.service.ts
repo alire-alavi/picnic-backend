@@ -1,4 +1,9 @@
-import { Injectable, Inject, UnauthorizedException, BadRequestException } from '@nestjs/common'
+import {
+  Injectable,
+  Inject,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common'
 import type { User } from '@prisma/client'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import type { Cache } from 'cache-manager'
@@ -31,7 +36,7 @@ export class AuthService {
     private readonly config: ConfigService,
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
-  ) { }
+  ) {}
   private verifyPassword(password: string, stored: string): boolean {
     const [salt, key] = stored.split(':')
     const hash = scryptSync(password, salt, 64)
@@ -88,7 +93,7 @@ export class AuthService {
   async sendOtpToPhone(phoneNumber: string): Promise<SmsSendResult> {
     if (!phoneNumber)
       return { success: false, error: 'phoneNumber is required' }
-    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    const otp = Math.floor(10000 + Math.random() * 90000).toString()
 
     const provider = (this.config.get<string>('SMS_PROVIDER') ||
       'kavenegar') as 'kavenegar'
@@ -126,7 +131,9 @@ export class AuthService {
    * Validates a challenge token and returns the user ID
    * Throws UnauthorizedException if token is invalid or expired
    */
-  private async validateChallengeToken(challengeToken: string): Promise<string> {
+  private async validateChallengeToken(
+    challengeToken: string,
+  ): Promise<string> {
     const userId = await this.usersService.verifyChallengeToken(challengeToken)
     if (!userId) {
       throw new UnauthorizedException('Invalid or expired challenge token')
