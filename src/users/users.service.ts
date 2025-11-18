@@ -26,6 +26,21 @@ export class UsersService {
     return timingSafeEqual(Buffer.from(key, 'hex'), hash)
   }
 
+  async findById(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        addresses: true,
+        orders: true,
+        profile: true,
+      },
+    })
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+    return user
+  }
+
   async create(input: CreateUserInput) {
     const hasEmail = !!input.email
     const hasPhone = !!input.phoneNumber

@@ -85,6 +85,9 @@ type SendOtpResponse {
 type Query {
   products(productFilter: ProductsFilterInput): [Product!]!
   product(id: String!): Product!
+
+  """Get current authenticated user information"""
+  me: User!
 }
 
 input ProductsFilterInput {
@@ -95,6 +98,12 @@ input ProductsFilterInput {
 
 type Mutation {
   createUser(input: CreateUserInput!): User!
+
+  """Set a password for a user who does not have one yet"""
+  setPassword(input: SetPasswordInput!): User!
+
+  """Update a user's password (requires old password verification)"""
+  updatePassword(input: UpdatePasswordInput!): User!
   loginWithPassword(email: String!, password: String!): AuthLoginResponse!
   loginWithPhoneNumber(phoneNumber: String!): SendOtpResponse!
   validateOtpAttempt(phoneNumber: String!, code: String!): AuthLoginResponse!
@@ -104,5 +113,18 @@ input CreateUserInput {
   email: String
   phoneNumber: String
   name: String
+
+  """Password is optional. Can be set later using setPassword mutation."""
   password: String
+}
+
+input SetPasswordInput {
+  userId: String!
+  password: String!
+}
+
+input UpdatePasswordInput {
+  userId: String!
+  oldPassword: String!
+  newPassword: String!
 }
