@@ -1,8 +1,8 @@
 import { AbstractModel } from '@picnic/utils'
 import { Field, ObjectType } from '@nestjs/graphql'
-import { Address } from './address.model';
+import { Address } from './address.model'
 import { Profile } from './profile.model'
-import { Order } from './order.model'
+import { Order } from '../../orders/models/order.model'
 
 @ObjectType()
 export class User extends AbstractModel {
@@ -26,4 +26,3 @@ export class User extends AbstractModel {
   @Field(() => Profile, { nullable: true })
   profile?: Profile
 }
-

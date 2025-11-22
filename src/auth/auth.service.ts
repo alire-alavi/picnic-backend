@@ -74,7 +74,12 @@ export class AuthService {
     password,
   }: LoginPasswordDto): Promise<User | null> {
     const user = await this.prismaService.user.findUnique({ where: { email } })
-    if (!user || !user.passwordHash) return null
+    if (!user) {
+      return null
+    } else if (!user.passwordHash) {
+      await this.usersService.setPassword(user.id, password)
+      return user
+    }
     return this.verifyPassword(password, user.passwordHash) ? user : null
   }
 
