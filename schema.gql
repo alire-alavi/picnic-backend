@@ -34,12 +34,20 @@ type Profile {
   updatedAt: String!
 }
 
+type OrderItem {
+  id: ID!
+  item: Product!
+  quantity: Float!
+  price: Float!
+}
+
 type Order {
   id: ID!
+  user: User!
   orderStatus: OrderStatus!
   orderItems: [OrderItem!]!
-  createdAt: String!
   updatedAt: String!
+  createdAt: String!
 }
 
 enum OrderStatus {
@@ -52,12 +60,6 @@ enum OrderStatus {
   SHIPPING
   CANCELLED
   COMPLETED
-}
-
-type OrderItem {
-  id: ID!
-  quantity: Float!
-  price: String!
 }
 
 type User {
@@ -88,6 +90,7 @@ type Query {
 
   """Get current authenticated user information"""
   me: User!
+  orders(status: OrderStatus): [Order!]!
 }
 
 input ProductsFilterInput {
@@ -107,6 +110,7 @@ type Mutation {
   loginWithPassword(email: String!, password: String!): AuthLoginResponse!
   loginWithPhoneNumber(phoneNumber: String!): SendOtpResponse!
   validateOtpAttempt(phoneNumber: String!, code: String!): AuthLoginResponse!
+  addItemToCart(input: AddItemToCartInput!): Order!
 }
 
 input CreateUserInput {
@@ -127,4 +131,9 @@ input UpdatePasswordInput {
   userId: String!
   oldPassword: String!
   newPassword: String!
+}
+
+input AddItemToCartInput {
+  productId: String!
+  quantity: Int! = 1
 }
