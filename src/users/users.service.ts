@@ -18,7 +18,6 @@ export class UsersService {
     return `${salt}:${hash.toString('hex')}`
   }
 
-
   // For future: compare helper
   private verifyPassword(password: string, stored: string): boolean {
     const [salt, key] = stored.split(':')
@@ -47,9 +46,7 @@ export class UsersService {
 
     // Enforce XOR: either email or phone but not both/none
     if (!hasEmail && !hasPhone) {
-      throw new BadRequestException(
-        'Provide either email or phoneNumber',
-      )
+      throw new BadRequestException('Provide either email or phoneNumber')
     }
     if (hasEmail && hasPhone) {
       throw new BadRequestException('Provide only one of email or phoneNumber')
