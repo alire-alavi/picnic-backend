@@ -1,8 +1,19 @@
 import { AbstractModel } from '@picnic/utils'
-import { Field, ObjectType } from '@nestjs/graphql'
+import { Field, ObjectType, registerEnumType } from '@nestjs/graphql'
 import { Address } from './address.model'
 import { Profile } from './profile.model'
 import { Order } from '../../orders/models/order.model'
+
+export enum UserRole {
+  USER = 'USER',
+  ADMIN = 'ADMIN',
+  SUPER_ADMIN = 'SUPER_ADMIN',
+}
+
+registerEnumType(UserRole, {
+  name: 'UserRole',
+  description: 'User role for access control',
+})
 
 @ObjectType()
 export class User extends AbstractModel {
@@ -12,6 +23,8 @@ export class User extends AbstractModel {
   phoneNumber?: string
   @Field({ nullable: true })
   name?: string
+  @Field(() => UserRole)
+  role: UserRole
   @Field()
   createdAt: string
   @Field()
