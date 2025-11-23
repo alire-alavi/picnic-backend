@@ -4,6 +4,7 @@ import type { Cache } from 'cache-manager'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateUserInput } from './dto/create-user.input'
 import { randomBytes, scryptSync, timingSafeEqual } from 'crypto'
+import { UserRole } from '@prisma/client'
 
 @Injectable()
 export class UsersService {
@@ -191,6 +192,30 @@ export class UsersService {
     const updated = await this.prisma.user.update({
       where: { id: userId },
       data: { passwordHash },
+    })
+
+    return updated
+  }
+
+  /**
+   * Updates a user's role (admin only)
+   */
+  async updateUserRole(userId: string, role: UserRole) {
+    // Check if user exists
+    const user = await this.prisma.user.findUnique({ where: { id: userId } })
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    // Update the role
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { role },
+      include: {
+        addresses: true,
+        orders: true,
+        profile: true,
+      },
     })
 
     return updated
