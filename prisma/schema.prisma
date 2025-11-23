@@ -15,6 +15,12 @@ enum UserStatus {
   INCOMPLETE
 }
 
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
 enum ImageSize {
   SMALL
   MEDIUM
@@ -27,6 +33,7 @@ model User {
   phoneNumber   String?
   passwordHash  String?
   name          String?
+  role          UserRole   @default(USER)
   preferences   Json?
   profileStatus UserStatus @default(INCOMPLETE)
   createdAt     DateTime   @default(now())
