@@ -15,6 +15,12 @@ enum UserStatus {
   INCOMPLETE
 }
 
+enum ImageSize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
 model User {
   id            String     @id @default(uuid())
   email         String?    @unique
@@ -46,6 +52,8 @@ model Category {
   id        String    @id @default(uuid())
   name      String
   slug      String    @unique
+  imageId   String?   @unique
+  image     Image?    @relation("CategoryImage", fields: [imageId], references: [id])
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   products  Product[]
@@ -70,10 +78,26 @@ model Product {
   name            String
   slug            String      @unique
   price           Decimal     @db.Decimal(10, 2)
+  thumbnailId     String?     @unique
+  thumbnail       Image?      @relation("ProductThumbnail", fields: [thumbnailId], references: [id])
+  sliderImages    Image[]     @relation("ProductSliderImages")
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   comments        Comment[]
   orderItems      OrderItem[]
+}
+
+model Image {
+  id               String    @id @default(ulid())
+  url              String
+  size             ImageSize @default(LARGE)
+  altText          String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  category         Category? @relation("CategoryImage")
+  productThumbnail Product?  @relation("ProductThumbnail")
+  productSlider    Product?  @relation("ProductSliderImages", fields: [productSliderId], references: [id])
+  productSliderId  String?
 }
 
 model Comment {
