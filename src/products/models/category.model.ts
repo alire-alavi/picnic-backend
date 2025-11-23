@@ -3,33 +3,15 @@ import { AbstractModel } from '@picnic/utils'
 import { Image } from './image.model'
 
 @ObjectType()
-export class Product extends AbstractModel {
+export class Category extends AbstractModel {
     @Field()
     name: string
 
     @Field()
     slug: string
 
-    @Field()
-    price: string
-
-    @Field()
-    categoryId: string
-
-    @Field()
-    seo_title: string
-
-    @Field()
-    seo_description: string
-
-    @Field()
-    seo_keywords: string
-
     @Field(() => Image, { nullable: true })
-    thumbnail?: Image
-
-    @Field(() => [Image], { nullable: true })
-    sliderImages?: Image[]
+    image?: Image
 
     @Field()
     createdAt: Date
