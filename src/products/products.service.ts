@@ -36,6 +36,10 @@ export class ProductsService {
             orderBy: { createdAt: 'desc' },
             take: limit || 20,
             skip: offset || 0,
+            include: {
+                thumbnail: true,
+                sliderImages: true,
+            },
         })
 
         return products.map((p) => ({
@@ -45,7 +49,13 @@ export class ProductsService {
     }
 
     async getById(id: string): Promise<Product | null> {
-        const product = await this.prisma.product.findUnique({ where: { id } })
+        const product = await this.prisma.product.findUnique({
+            where: { id },
+            include: {
+                thumbnail: true,
+                sliderImages: true,
+            },
+        })
         if (!product) return null
 
         return {
