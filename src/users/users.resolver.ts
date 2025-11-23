@@ -4,8 +4,11 @@ import { UsersService } from './users.service';
 import { CreateUserInput } from './dto/create-user.input';
 import { SetPasswordInput } from './dto/set-password.input';
 import { UpdatePasswordInput } from './dto/update-password.input';
+import { UpdateUserRoleInput } from './dto/update-user-role.input';
 import { User } from './models/user.model';
 import { GqlAuthGuard } from '../auth/gql-auth.guard';
+import { GqlRolesGuard } from '../auth/guards/gql-roles.guard';
+import { Roles, UserRole } from '../auth/decorators/roles.decorator';
 
 @Resolver()
 export class UsersResolver {
@@ -51,5 +54,17 @@ export class UsersResolver {
             input.oldPassword,
             input.newPassword,
         ) as any
+    }
+
+    @Mutation(() => User, {
+        name: 'updateUserRole',
+        description: 'Update a user\'s role (admin only)'
+    })
+    @UseGuards(GqlAuthGuard, GqlRolesGuard)
+    @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+    async updateUserRole(
+        @Args('input', { type: () => UpdateUserRoleInput }) input: UpdateUserRoleInput,
+    ): Promise<User> {
+        return this.usersService.updateUserRole(input.userId, input.role) as any
     }
 }
