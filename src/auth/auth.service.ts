@@ -36,7 +36,7 @@ export class AuthService {
     private readonly config: ConfigService,
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
-  ) {}
+  ) { }
   private verifyPassword(password: string, stored: string): boolean {
     const [salt, key] = stored.split(':')
     const hash = scryptSync(password, salt, 64)
@@ -199,6 +199,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       phoneNumber: user.phoneNumber,
+      role: user.role,
     })
 
     return { accessToken, user }
@@ -233,6 +234,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       phoneNumber: user.phoneNumber,
+      role: user.role,
     })
 
     return { accessToken, user }

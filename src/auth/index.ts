@@ -1,3 +1,6 @@
 export * from './auth.module'
 export * from './gql-auth.guard'
 export * from './strategies/jwt.strategy'
+export * from './decorators/roles.decorator'
+export * from './guards/roles.guard'
+export * from './guards/gql-roles.guard'
