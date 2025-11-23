@@ -104,11 +104,19 @@ type User {
   email: String
   phoneNumber: String
   name: String
+  role: UserRole!
   createdAt: String!
   updatedAt: String!
   addresses: [Address!]!
   orders: [Order!]!
   profile: Profile
+}
+
+"""User role for access control"""
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
 }
 
 type AuthLoginResponse {
@@ -144,6 +152,9 @@ type Mutation {
 
   """Update a user's password (requires old password verification)"""
   updatePassword(input: UpdatePasswordInput!): User!
+
+  """Update a user's role (admin only)"""
+  updateUserRole(input: UpdateUserRoleInput!): User!
   loginWithPassword(email: String!, password: String!): AuthLoginResponse!
   loginWithPhoneNumber(phoneNumber: String!): SendOtpResponse!
   validateOtpAttempt(phoneNumber: String!, code: String!): AuthLoginResponse!
@@ -168,6 +179,11 @@ input UpdatePasswordInput {
   userId: String!
   oldPassword: String!
   newPassword: String!
+}
+
+input UpdateUserRoleInput {
+  userId: String!
+  role: UserRole!
 }
 
 input AddItemToCartInput {
