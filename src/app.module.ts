@@ -14,7 +14,9 @@ import { UsersModule } from './users/users.module'
 import { AuthModule } from './auth/auth.module'
 import { SmsModule } from './sms/sms.module'
 import { RedisOptions } from './configs/redis-config'
-import { OrdersModule } from './orders/orders.module';
+import { OrdersModule } from './orders/orders.module'
+import { CategoriesModule } from './categories/categories.module'
+import { ChannelsModule } from './channels/channels.module'
 
 @Module({
   imports: [
@@ -36,8 +38,10 @@ import { OrdersModule } from './orders/orders.module';
     AuthModule,
     SmsModule,
     OrdersModule,
+    CategoriesModule,
+    ChannelsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
