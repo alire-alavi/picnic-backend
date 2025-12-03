@@ -27,6 +27,28 @@ enum ImageSize {
   LARGE
 }
 
+enum ChannelType {
+  WEB
+  MOBILE
+  MARKETPLACE
+  STORE
+  PARTNER
+}
+
+model Channel {
+  id          String      @id @default(uuid())
+  name        String
+  slug        String      @unique
+  type        ChannelType
+  description String?
+  isActive    Boolean     @default(true)
+  config      Json?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  products    Product[]
+  orders      Order[]
+}
+
 model User {
   id            String     @id @default(uuid())
   email         String?    @unique
@@ -79,6 +101,8 @@ model Product {
   id              String      @id @default(uuid())
   categoryId      String
   category        Category    @relation(fields: [categoryId], references: [id])
+  channelId       String?
+  channel         Channel?    @relation(fields: [channelId], references: [id])
   seo_title       String
   seo_description String
   seo_keywords    String
@@ -92,6 +116,8 @@ model Product {
   updatedAt       DateTime    @updatedAt
   comments        Comment[]
   orderItems      OrderItem[]
+
+  @@index([channelId])
 }
 
 model Image {
@@ -146,9 +172,13 @@ model Order {
   userId      String
   orderStatus OrderStatus @default(PAYMENT_REQUIRED)
   user        User        @relation(fields: [userId], references: [id])
+  channelId   String?
+  channel     Channel?    @relation(fields: [channelId], references: [id])
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   orderItems  OrderItem[]
+
+  @@index([channelId])
 }
 
 enum AddressType {
