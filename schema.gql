@@ -22,12 +22,34 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type Channel {
+  id: ID!
+  name: String!
+  slug: String!
+  type: ChannelType!
+  description: String
+  isActive: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""The type of sales channel"""
+enum ChannelType {
+  WEB
+  MOBILE
+  MARKETPLACE
+  STORE
+  PARTNER
+}
+
 type Product {
   id: ID!
   name: String!
   slug: String!
   price: String!
   categoryId: String!
+  channelId: String
+  channel: Channel
   seo_title: String!
   seo_description: String!
   seo_keywords: String!
@@ -82,6 +104,8 @@ type Order {
   id: ID!
   user: User!
   orderStatus: OrderStatus!
+  channelId: String
+  channel: Channel
   orderItems: [OrderItem!]!
   updatedAt: String!
   createdAt: String!
@@ -129,13 +153,30 @@ type SendOtpResponse {
   error: String
 }
 
+type Category {
+  id: ID!
+  name: String!
+  slug: String!
+  image: Image
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 type Query {
   products(productFilter: ProductsFilterInput, limit: Int = 20, offset: Int = 0): ProductsResponse!
   product(id: String!): Product!
+  image(id: String!): Image!
+  images: [Image!]!
 
   """Get current authenticated user information"""
   me: User!
   orders(status: OrderStatus): [Order!]!
+  categories: [Category!]!
+  category(id: String!): Category!
+  channels: [Channel!]!
+  activeChannels: [Channel!]!
+  channel(id: String!): Channel!
+  channelBySlug(slug: String!): Channel
 }
 
 input ProductsFilterInput {
@@ -145,6 +186,10 @@ input ProductsFilterInput {
 }
 
 type Mutation {
+  createProduct(input: CreateProductInput!): Product!
+  updateProductImages(id: String!, input: UpdateProductImagesInput!): Product!
+  createImage(input: CreateImageInput!): Image!
+  deleteImage(id: String!): Image!
   createUser(input: CreateUserInput!): User!
 
   """Set a password for a user who does not have one yet"""
@@ -159,7 +204,39 @@ type Mutation {
   loginWithPhoneNumber(phoneNumber: String!): SendOtpResponse!
   validateOtpAttempt(phoneNumber: String!, code: String!): AuthLoginResponse!
   addItemToCart(input: AddItemToCartInput!): Order!
+  createCategory(input: CreateCategoryInput!): Category!
+  updateCategory(id: String!, input: UpdateCategoryInput!): Category!
+  deleteCategory(id: String!): Category!
+  createChannel(input: CreateChannelInput!): Channel!
+  updateChannel(id: String!, input: UpdateChannelInput!): Channel!
+  deleteChannel(id: String!): Channel!
 }
+
+input CreateProductInput {
+  name: String!
+  slug: String!
+  price: Float!
+  seo_title: String!
+  seo_description: String!
+  seo_keywords: String!
+  categoryId: String!
+  channelId: String
+  thumbnailId: String
+}
+
+input UpdateProductImagesInput {
+  thumbnailId: String
+  sliderImageIds: [String!]
+}
+
+input CreateImageInput {
+  file: Upload!
+  size: ImageSize! = LARGE
+  altText: String
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
 
 input CreateUserInput {
   email: String
@@ -189,4 +266,33 @@ input UpdateUserRoleInput {
 input AddItemToCartInput {
   productId: String!
   quantity: Int! = 1
+  channelId: String
+}
+
+input CreateCategoryInput {
+  name: String!
+  slug: String!
+  imageId: String
+}
+
+input UpdateCategoryInput {
+  name: String
+  slug: String
+  imageId: String
+}
+
+input CreateChannelInput {
+  name: String!
+  slug: String!
+  type: ChannelType!
+  description: String
+  isActive: Boolean = true
+}
+
+input UpdateChannelInput {
+  name: String
+  slug: String
+  type: ChannelType
+  description: String
+  isActive: Boolean
 }
