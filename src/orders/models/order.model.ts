@@ -2,6 +2,7 @@ import { AbstractModel } from '@picnic/utils'
 import { Field, ObjectType, registerEnumType } from '@nestjs/graphql'
 import { User } from '../../users/models/user.model'
 import { Product } from '../../products/models/product.model'
+import { Channel } from '../../channels/models/channel.model'
 import { OrderStatus as PrismaOrderStatus } from '@prisma/client'
 
 // Re-export Prisma's OrderStatus enum for GraphQL
@@ -30,6 +31,12 @@ export class Order extends AbstractModel {
 
   @Field(() => OrderStatus)
   orderStatus: typeof OrderStatus
+
+  @Field({ nullable: true })
+  channelId?: string
+
+  @Field(() => Channel, { nullable: true })
+  channel?: Channel
 
   @Field(() => [OrderItem])
   orderItems: OrderItem[]

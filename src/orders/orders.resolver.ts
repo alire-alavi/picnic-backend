@@ -33,6 +33,7 @@ export class OrdersResolver {
       userId,
       input.productId,
       input.quantity,
+      input.channelId,
     )
     return response as any
   }

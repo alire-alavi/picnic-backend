@@ -5,16 +5,11 @@
 type Image {
   id: ID!
   url: String!
-  size: ImageSize!
+  md: String!
+  sm: String!
   altText: String
   createdAt: DateTime!
   updatedAt: DateTime!
-}
-
-enum ImageSize {
-  SMALL
-  MEDIUM
-  LARGE
 }
 
 """
@@ -162,11 +157,16 @@ type Category {
   updatedAt: DateTime!
 }
 
+type ImagesResponse {
+  items: [Image!]!
+  total: Int!
+  limit: Int!
+  offset: Int!
+}
+
 type Query {
   products(productFilter: ProductsFilterInput, limit: Int = 20, offset: Int = 0): ProductsResponse!
   product(id: String!): Product!
-  image(id: String!): Image!
-  images: [Image!]!
 
   """Get current authenticated user information"""
   me: User!
@@ -177,6 +177,8 @@ type Query {
   activeChannels: [Channel!]!
   channel(id: String!): Channel!
   channelBySlug(slug: String!): Channel
+  images(limit: Int = 20, offset: Int = 0): ImagesResponse!
+  image(id: String!): Image
 }
 
 input ProductsFilterInput {
@@ -188,8 +190,6 @@ input ProductsFilterInput {
 type Mutation {
   createProduct(input: CreateProductInput!): Product!
   updateProductImages(id: String!, input: UpdateProductImagesInput!): Product!
-  createImage(input: CreateImageInput!): Image!
-  deleteImage(id: String!): Image!
   createUser(input: CreateUserInput!): User!
 
   """Set a password for a user who does not have one yet"""
@@ -210,6 +210,9 @@ type Mutation {
   createChannel(input: CreateChannelInput!): Channel!
   updateChannel(id: String!, input: UpdateChannelInput!): Channel!
   deleteChannel(id: String!): Channel!
+  createImage(input: CreateImageInput!): Image!
+  updateImage(id: String!, input: UpdateImageInput!): Image!
+  deleteImage(id: String!): Image!
 }
 
 input CreateProductInput {
@@ -228,15 +231,6 @@ input UpdateProductImagesInput {
   thumbnailId: String
   sliderImageIds: [String!]
 }
-
-input CreateImageInput {
-  file: Upload!
-  size: ImageSize! = LARGE
-  altText: String
-}
-
-"""The `Upload` scalar type represents a file upload."""
-scalar Upload
 
 input CreateUserInput {
   email: String
@@ -295,4 +289,15 @@ input UpdateChannelInput {
   type: ChannelType
   description: String
   isActive: Boolean
+}
+
+input CreateImageInput {
+  id: String
+  url: String!
+  altText: String
+}
+
+input UpdateImageInput {
+  url: String
+  altText: String
 }

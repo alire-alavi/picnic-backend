@@ -4,7 +4,7 @@ import { OrderStatus, Prisma } from '@prisma/client'
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) { }
 
   async findOrders(userId?: string, status?: OrderStatus) {
     const where: Prisma.OrderWhereInput = {}
@@ -21,6 +21,7 @@ export class OrdersService {
       where,
       include: {
         user: true,
+        channel: true,
         orderItems: {
           include: {
             item: true,
@@ -37,16 +38,20 @@ export class OrdersService {
   async findOne(id: string) {
     await this.prismaService.order.findUnique({
       where: { id },
+      include: {
+        channel: true,
+      },
     })
   }
 
-  async createOrder(userId: string) {
+  async createOrder(userId: string, channelId?: string) {
     const qry = await this.prismaService.order.create({
-      data: { userId },
+      data: { userId, channelId },
       select: {
         id: true,
         userId: true,
         orderStatus: true,
+        channelId: true,
       },
     })
     return qry
@@ -75,7 +80,7 @@ export class OrdersService {
    * Add an item to the current user's PENDING cart
    * Creates a new PENDING order if one doesn't exist
    */
-  async addItemToCart(userId: string, productId: string, quantity: number) {
+  async addItemToCart(userId: string, productId: string, quantity: number, channelId?: string) {
     // First, get the product to retrieve its current price
     const product = await this.prismaService.product.findUnique({
       where: { id: productId },
@@ -103,6 +108,7 @@ export class OrdersService {
         data: {
           userId,
           orderStatus: OrderStatus.PENDING,
+          channelId,
         },
         include: {
           orderItems: true,
@@ -138,6 +144,7 @@ export class OrdersService {
       where: { id: cart.id },
       include: {
         user: true,
+        channel: true,
         orderItems: {
           include: {
             item: true,
