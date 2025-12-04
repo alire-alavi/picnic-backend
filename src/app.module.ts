@@ -17,6 +17,7 @@ import { RedisOptions } from './configs/redis-config'
 import { OrdersModule } from './orders/orders.module'
 import { CategoriesModule } from './categories/categories.module'
 import { ChannelsModule } from './channels/channels.module'
+import { ImagesModule } from './images/images.module'
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ChannelsModule } from './channels/channels.module'
     OrdersModule,
     CategoriesModule,
     ChannelsModule,
+    ImagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
