@@ -1,7 +1,21 @@
-import { Resolver, Query, Args, Int, ObjectType, Field } from '@nestjs/graphql'
+import {
+  Mutation,
+  Resolver,
+  Query,
+  Args,
+  Int,
+  ObjectType,
+  Field,
+} from '@nestjs/graphql'
+import { UseGuards } from '@nestjs/common'
 import { ProductsFilterInput } from './dto/products.input'
+import { CreateProductInput } from './dto/create-product.input'
+import { UpdateProductImagesInput } from './dto/update-product-images.input'
 import { ProductsService } from './products.service'
 import { Product } from './models/product.model'
+import { GqlAuthGuard } from '../auth/gql-auth.guard'
+import { GqlRolesGuard } from '../auth/guards/gql-roles.guard'
+import { Roles, UserRole } from '../auth/decorators/roles.decorator'
 
 @ObjectType()
 class ProductsResponse {
@@ -21,6 +35,26 @@ class ProductsResponse {
 @Resolver()
 export class ProductsResolver {
   constructor(private readonly productsService: ProductsService) { }
+
+  @Mutation(() => Product)
+  @UseGuards(GqlAuthGuard, GqlRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  async createProduct(
+    @Args('input', { type: () => CreateProductInput })
+    input: CreateProductInput
+  ) {
+    return this.productsService.create({
+      name: input.name,
+      slug: input.slug,
+      price: input.price,
+      seo_title: input.seo_title,
+      seo_description: input.seo_description,
+      seo_keywords: input.seo_keywords,
+      categoryId: input.categoryId,
+      thumbnailId: input.thumbnailId,
+      channelId: input.channelId,
+    })
+  }
 
   @Query(() => ProductsResponse, { name: 'products' })
   async getProducts(
@@ -55,5 +89,18 @@ export class ProductsResolver {
   @Query(() => Product, { name: 'product' })
   async getSingleProduct(@Args('id', { type: () => String }) id: string) {
     return this.productsService.getById(id)
+  }
+
+  @Mutation(() => Product)
+  @UseGuards(GqlAuthGuard, GqlRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  async updateProductImages(
+    @Args('id', { type: () => String }) id: string,
+    @Args('input', { type: () => UpdateProductImagesInput }) input: UpdateProductImagesInput,
+  ) {
+    return this.productsService.updateImages(id, {
+      thumbnailId: input.thumbnailId,
+      sliderImageIds: input.sliderImageIds,
+    })
   }
 }
