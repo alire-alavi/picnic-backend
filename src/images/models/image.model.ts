@@ -1,5 +1,6 @@
-import { Field, ObjectType } from '@nestjs/graphql'
+import { Field, ObjectType, registerEnumType } from '@nestjs/graphql'
 import { AbstractModel } from '@picnic/utils'
+
 
 @ObjectType()
 export class Image extends AbstractModel {

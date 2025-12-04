@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
-import { Image, ImageSize } from '@prisma/client'
-import { ImageSize as GraphQLImageSize } from './models/image.model'
+import { Image } from '@prisma/client'
 
 @Injectable()
 export class ImagesService {
@@ -10,14 +9,12 @@ export class ImagesService {
     async create(data: {
         id?: string
         url: string
-        size?: GraphQLImageSize
         altText?: string
     }): Promise<Image> {
         return this.prisma.image.create({
             data: {
                 id: data.id,
                 url: data.url,
-                size: data.size as ImageSize || ImageSize.LARGE,
                 altText: data.altText,
             },
         })
@@ -48,7 +45,6 @@ export class ImagesService {
         id: string,
         data: {
             url?: string
-            size?: GraphQLImageSize
             altText?: string
         },
     ): Promise<Image> {
@@ -56,7 +52,6 @@ export class ImagesService {
             where: { id },
             data: {
                 url: data.url,
-                size: data.size as ImageSize,
                 altText: data.altText,
             },
         })

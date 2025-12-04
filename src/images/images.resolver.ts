@@ -36,7 +36,8 @@ function mapPrismaImageToGraphQL(prismaImage: any): Image {
     return {
         id: prismaImage.id,
         url: prismaImage.url,
-        size: prismaImage.size,
+        sm: prismaImage.sm,
+        md: prismaImage.md,
         altText: prismaImage.altText,
         createdAt: prismaImage.createdAt,
         updatedAt: prismaImage.updatedAt,
@@ -57,7 +58,6 @@ export class ImagesResolver {
         const image = await this.imagesService.create({
             id: input.id,
             url: input.url,
-            size: input.size,
             altText: input.altText,
         })
         return mapPrismaImageToGraphQL(image)
@@ -98,7 +98,6 @@ export class ImagesResolver {
     ) {
         const image = await this.imagesService.update(id, {
             url: input.url,
-            size: input.size,
             altText: input.altText,
         })
         return mapPrismaImageToGraphQL(image)

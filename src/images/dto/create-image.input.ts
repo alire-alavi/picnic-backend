@@ -1,6 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql'
 import { IsString, IsOptional, IsEnum } from 'class-validator'
-import { ImageSize } from '../models/image.model'
 
 @InputType()
 export class CreateImageInput {
@@ -12,11 +11,6 @@ export class CreateImageInput {
     @Field()
     @IsString()
     url: string
-
-    @Field(() => ImageSize, { defaultValue: ImageSize.LARGE })
-    @IsEnum(ImageSize)
-    @IsOptional()
-    size?: ImageSize
 
     @Field({ nullable: true })
     @IsString()
