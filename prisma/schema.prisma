@@ -21,12 +21,6 @@ enum UserRole {
   SUPER_ADMIN
 }
 
-enum ImageSize {
-  SMALL
-  MEDIUM
-  LARGE
-}
-
 enum ChannelType {
   WEB
   MOBILE
@@ -123,7 +117,8 @@ model Product {
 model Image {
   id               String    @id @default(ulid())
   url              String
-  size             ImageSize @default(LARGE)
+  md               String?
+  sm               String?
   altText          String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt

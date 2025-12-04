@@ -1,30 +1,23 @@
-import { Field, ObjectType, registerEnumType } from '@nestjs/graphql'
+import { Field, ObjectType } from '@nestjs/graphql'
 import { AbstractModel } from '@picnic/utils'
-
-export enum ImageSize {
-    SMALL = 'SMALL',
-    MEDIUM = 'MEDIUM',
-    LARGE = 'LARGE',
-}
-
-registerEnumType(ImageSize, {
-    name: 'ImageSize',
-})
 
 @ObjectType()
 export class Image extends AbstractModel {
-    @Field()
-    url: string
+  @Field()
+  url: string
 
-    @Field(() => ImageSize)
-    size: ImageSize
+  @Field()
+  md: string
 
-    @Field({ nullable: true })
-    altText?: string
+  @Field()
+  sm: string
 
-    @Field()
-    createdAt: Date
+  @Field({ nullable: true })
+  altText?: string
 
-    @Field()
-    updatedAt: Date
+  @Field()
+  createdAt: Date
+
+  @Field()
+  updatedAt: Date
 }
