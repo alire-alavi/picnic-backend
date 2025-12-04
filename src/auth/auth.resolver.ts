@@ -26,7 +26,7 @@ export class AuthResolver {
   constructor(
     private jwt: JwtService,
     private authService: AuthService,
-  ) {}
+  ) { }
 
   @Mutation(() => AuthLoginResponse, { name: 'loginWithPassword' })
   async loginWithPassword(
@@ -37,7 +37,12 @@ export class AuthResolver {
       throw new BadRequestException('Invalid credentials')
     const user = await this.authService.loginWithPassword({ email, password })
     if (!user) throw new BadRequestException('Invalid credentials')
-    const payload = { sub: user.id, email: user.email }
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      role: user.role,
+    }
     const accessToken = await this.jwt.signAsync(payload)
     return { accessToken }
   }
@@ -66,7 +71,12 @@ export class AuthResolver {
       otp: code,
     })
     if (response) {
-      const payload = { sub: response.id, email: response.email }
+      const payload = {
+        sub: response.id,
+        email: response.email,
+        phoneNumber: response.phoneNumber,
+        role: response.role,
+      }
       const accessToken = await this.jwt.signAsync(payload)
       return { accessToken }
     } else {

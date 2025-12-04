@@ -1,4 +1,4 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common'
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { GqlExecutionContext } from '@nestjs/graphql'
 import { ROLES_KEY, UserRole } from '../decorators/roles.decorator'
@@ -22,9 +22,21 @@ export class GqlRolesGuard implements CanActivate {
         const user = request.user
 
         if (!user) {
-            return false
+            throw new ForbiddenException('User not authenticated')
         }
 
-        return requiredRoles.some((role) => user.role === role)
+        if (!user.role) {
+            throw new ForbiddenException('User role not found in token')
+        }
+
+        const hasRole = requiredRoles.some((role) => user.role === role)
+
+        if (!hasRole) {
+            throw new ForbiddenException(
+                `User role '${user.role}' does not have permission. Required roles: ${requiredRoles.join(', ')}`
+            )
+        }
+
+        return true
     }
 }
