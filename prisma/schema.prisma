@@ -29,6 +29,31 @@ enum ChannelType {
   PARTNER
 }
 
+model ProductPrice {
+  id         String  @id @default(cuid())
+  productId  String
+  currencyId String
+  amount     Decimal
+
+  product  Product  @relation(fields: [productId], references: [id])
+  currency Currency @relation(fields: [currencyId], references: [id])
+
+  @@unique([productId, currencyId]) // One price per currency
+}
+
+model Currency {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  name          String // US Dollar, Euro, Emirati Dirham...
+  symbol        String // $, €, د.إ
+  decimalPlaces Int      @default(2) // 2 for USD/EUR, 0 for JPY, etc.
+  isActive      Boolean  @default(true) // Can disable currencies you don't use
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  ProductPrice ProductPrice[]
+}
+
 model Channel {
   id          String      @id @default(uuid())
   name        String
@@ -92,24 +117,25 @@ model PricePlan {
 }
 
 model Product {
-  id              String      @id @default(uuid())
+  id              String         @id @default(uuid())
   categoryId      String
-  category        Category    @relation(fields: [categoryId], references: [id])
+  category        Category       @relation(fields: [categoryId], references: [id])
   channelId       String?
-  channel         Channel?    @relation(fields: [channelId], references: [id])
+  channel         Channel?       @relation(fields: [channelId], references: [id])
   seo_title       String
   seo_description String
   seo_keywords    String
   name            String
-  slug            String      @unique
-  price           Decimal     @db.Decimal(10, 2)
-  thumbnailId     String?     @unique
-  thumbnail       Image?      @relation("ProductThumbnail", fields: [thumbnailId], references: [id])
-  sliderImages    Image[]     @relation("ProductSliderImages")
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  slug            String         @unique
+  price           Decimal        @db.Decimal(10, 2)
+  thumbnailId     String?        @unique
+  thumbnail       Image?         @relation("ProductThumbnail", fields: [thumbnailId], references: [id])
+  sliderImages    Image[]        @relation("ProductSliderImages")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
   comments        Comment[]
   orderItems      OrderItem[]
+  productPrices   ProductPrice[]
 
   @@index([channelId])
 }
