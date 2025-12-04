@@ -1,39 +1,46 @@
 import { Field, ObjectType } from '@nestjs/graphql'
 import { AbstractModel } from '@picnic/utils'
-import { Image } from './image.model'
+import { Image } from '../../images/models/image.model'
+import { Channel } from '../../channels/models/channel.model'
 
 @ObjectType()
 export class Product extends AbstractModel {
-    @Field()
-    name: string
+  @Field()
+  name: string
 
-    @Field()
-    slug: string
+  @Field()
+  slug: string
 
-    @Field()
-    price: string
+  @Field()
+  price: string
 
-    @Field()
-    categoryId: string
+  @Field()
+  categoryId: string
 
-    @Field()
-    seo_title: string
+  @Field({ nullable: true })
+  channelId?: string
 
-    @Field()
-    seo_description: string
+  @Field(() => Channel, { nullable: true })
+  channel?: Channel
 
-    @Field()
-    seo_keywords: string
+  @Field()
+  seo_title: string
 
-    @Field(() => Image, { nullable: true })
-    thumbnail?: Image
+  @Field()
+  seo_description: string
 
-    @Field(() => [Image], { nullable: true })
-    sliderImages?: Image[]
+  @Field()
+  seo_keywords: string
 
-    @Field()
-    createdAt: Date
+  @Field(() => Image, { nullable: true })
+  thumbnail?: Image
 
-    @Field()
-    updatedAt: Date
+  @Field(() => [Image], { nullable: true })
+  sliderImages?: Image[]
+
+  @Field()
+  createdAt: Date
+
+  @Field()
+  updatedAt: Date
 }
