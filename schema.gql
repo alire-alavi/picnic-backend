@@ -5,8 +5,8 @@
 type Image {
   id: ID!
   url: String!
-  md: String!
-  sm: String!
+  md: String
+  sm: String
   altText: String
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -37,11 +37,31 @@ enum ChannelType {
   PARTNER
 }
 
+type Currency {
+  id: ID!
+  code: String!
+  name: String!
+  symbol: String!
+  decimalPlaces: Int!
+  isActive: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ProductPrice {
+  id: String!
+  productId: String!
+  currencyId: String!
+  amount: String!
+  currency: Currency
+}
+
 type Product {
   id: ID!
   name: String!
   slug: String!
   price: String!
+  productPrices: [ProductPrice!]
   categoryId: String!
   channelId: String
   channel: Channel
@@ -166,7 +186,7 @@ type ImagesResponse {
 
 type Query {
   products(productFilter: ProductsFilterInput, limit: Int = 20, offset: Int = 0): ProductsResponse!
-  product(id: String!): Product!
+  product(id: String, slug: String): Product!
 
   """Get current authenticated user information"""
   me: User!
@@ -179,6 +199,9 @@ type Query {
   channelBySlug(slug: String!): Channel
   images(limit: Int = 20, offset: Int = 0): ImagesResponse!
   image(id: String!): Image
+  currencies(activeOnly: Boolean = false): [Currency!]!
+  currency(id: String!): Currency
+  currencyByCode(code: String!): Currency
 }
 
 input ProductsFilterInput {
@@ -213,18 +236,26 @@ type Mutation {
   createImage(input: CreateImageInput!): Image!
   updateImage(id: String!, input: UpdateImageInput!): Image!
   deleteImage(id: String!): Image!
+  createCurrency(input: CreateCurrencyInput!): Currency!
+  updateCurrency(id: String!, input: UpdateCurrencyInput!): Currency!
+  deleteCurrency(id: String!): Boolean!
 }
 
 input CreateProductInput {
   name: String!
   slug: String!
-  price: Float!
+  prices: [ProductPriceInput!]!
   seo_title: String!
   seo_description: String!
   seo_keywords: String!
   categoryId: String!
   channelId: String
   thumbnailId: String
+}
+
+input ProductPriceInput {
+  currencyId: String!
+  amount: Float!
 }
 
 input UpdateProductImagesInput {
@@ -300,4 +331,19 @@ input CreateImageInput {
 input UpdateImageInput {
   url: String
   altText: String
+}
+
+input CreateCurrencyInput {
+  code: String!
+  name: String!
+  symbol: String!
+  decimalPlaces: Int! = 2
+  isActive: Boolean! = true
+}
+
+input UpdateCurrencyInput {
+  name: String
+  symbol: String
+  decimalPlaces: Int
+  isActive: Boolean
 }

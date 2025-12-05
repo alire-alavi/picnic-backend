@@ -7,7 +7,7 @@ import {
   ObjectType,
   Field,
 } from '@nestjs/graphql'
-import { UseGuards } from '@nestjs/common'
+import { BadRequestException, UseGuards } from '@nestjs/common'
 import { ProductsFilterInput } from './dto/products.input'
 import { CreateProductInput } from './dto/create-product.input'
 import { UpdateProductImagesInput } from './dto/update-product-images.input'
@@ -34,19 +34,19 @@ class ProductsResponse {
 
 @Resolver()
 export class ProductsResolver {
-  constructor(private readonly productsService: ProductsService) { }
+  constructor(private readonly productsService: ProductsService) {}
 
   @Mutation(() => Product)
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   async createProduct(
     @Args('input', { type: () => CreateProductInput })
-    input: CreateProductInput
+    input: CreateProductInput,
   ) {
     return this.productsService.create({
       name: input.name,
       slug: input.slug,
-      price: input.price,
+      prices: input.prices,
       seo_title: input.seo_title,
       seo_description: input.seo_description,
       seo_keywords: input.seo_keywords,
@@ -67,10 +67,10 @@ export class ProductsResolver {
   ): Promise<ProductsResponse> {
     const filterObj = filter
       ? {
-        category: filter.category,
-        priceLte: filter.priceLte,
-        priceGte: filter.priceGte,
-      }
+          category: filter.category,
+          priceLte: filter.priceLte,
+          priceGte: filter.priceGte,
+        }
       : {}
 
     const [items, total] = await Promise.all([
@@ -87,8 +87,17 @@ export class ProductsResolver {
   }
 
   @Query(() => Product, { name: 'product' })
-  async getSingleProduct(@Args('id', { type: () => String }) id: string) {
-    return this.productsService.getById(id)
+  async getSingleProduct(
+    @Args('id', { type: () => String, nullable: true }) id?: string,
+    @Args('slug', { type: () => String, nullable: true }) slug?: string,
+  ) {
+    if (!id && !slug) {
+      throw new BadRequestException('You need to query the product')
+    } else if (id) {
+      return this.productsService.getById(id)
+    } else if (slug) {
+      return this.productsService.getBySlug(slug)
+    }
   }
 
   @Mutation(() => Product)
@@ -96,7 +105,8 @@ export class ProductsResolver {
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   async updateProductImages(
     @Args('id', { type: () => String }) id: string,
-    @Args('input', { type: () => UpdateProductImagesInput }) input: UpdateProductImagesInput,
+    @Args('input', { type: () => UpdateProductImagesInput })
+    input: UpdateProductImagesInput,
   ) {
     return this.productsService.updateImages(id, {
       thumbnailId: input.thumbnailId,
