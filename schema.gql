@@ -227,6 +227,7 @@ type Mutation {
   loginWithPhoneNumber(phoneNumber: String!): SendOtpResponse!
   validateOtpAttempt(phoneNumber: String!, code: String!): AuthLoginResponse!
   addItemToCart(input: AddItemToCartInput!): Order!
+  removeItemFromCart(input: RemoveItemFromCartInput!): Order!
   createCategory(input: CreateCategoryInput!): Category!
   updateCategory(id: String!, input: UpdateCategoryInput!): Category!
   deleteCategory(id: String!): Category!
@@ -292,6 +293,10 @@ input AddItemToCartInput {
   productId: String!
   quantity: Int! = 1
   channelId: String
+}
+
+input RemoveItemFromCartInput {
+  productId: String!
 }
 
 input CreateCategoryInput {

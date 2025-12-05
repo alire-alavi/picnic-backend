@@ -24,7 +24,11 @@ export class OrdersService {
         channel: true,
         orderItems: {
           include: {
-            item: true,
+            item: {
+              include: {
+                thumbnail: true,
+              },
+            },
           },
         },
       },
@@ -138,6 +142,56 @@ export class OrdersService {
         },
       })
     }
+
+    // Return the updated cart with all items
+    const updatedCart = await this.prismaService.order.findUnique({
+      where: { id: cart.id },
+      include: {
+        user: true,
+        channel: true,
+        orderItems: {
+          include: {
+            item: true,
+          },
+        },
+      },
+    })
+
+    return updatedCart
+  }
+
+  /**
+   * Remove an item from the current user's PENDING cart
+   */
+  async removeItemFromCart(userId: string, productId: string) {
+    // Find the user's PENDING cart
+    const cart = await this.prismaService.order.findFirst({
+      where: {
+        userId,
+        orderStatus: OrderStatus.PENDING,
+      },
+      include: {
+        orderItems: true,
+      },
+    })
+
+    if (!cart) {
+      throw new Error('No active cart found')
+    }
+
+    // Find the item in the cart
+    const existingItem = cart.orderItems.find(
+      (item) => item.itemId === productId,
+    )
+
+    if (!existingItem) {
+      throw new Error('Item not found in cart')
+    }
+
+    // Remove the item from the cart
+    await this.prismaService.orderItem.delete({
+      where: { id: existingItem.id },
+    })
 
     // Return the updated cart with all items
     const updatedCart = await this.prismaService.order.findUnique({

@@ -5,6 +5,7 @@ import { Order, OrderStatus } from './models/order.model'
 import { GqlAuthGuard } from '../auth'
 import { OrderStatus as PrismaOrderStatus } from '@prisma/client'
 import { AddItemToCartInput } from './dto/add-to-cart.input'
+import { RemoveItemFromCartInput } from './dto/remove-from-cart.input'
 
 @Resolver()
 export class OrdersResolver {
@@ -34,6 +35,20 @@ export class OrdersResolver {
       input.productId,
       input.quantity,
       input.channelId,
+    )
+    return response as any
+  }
+
+  @Mutation(() => Order)
+  @UseGuards(GqlAuthGuard)
+  async removeItemFromCart(
+    @Context() context: any,
+    @Args('input') input: RemoveItemFromCartInput,
+  ): Promise<Order> {
+    const userId = context.req.user.userId
+    const response = await this.orderSerivce.removeItemFromCart(
+      userId,
+      input.productId,
     )
     return response as any
   }
