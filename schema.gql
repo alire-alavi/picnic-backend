@@ -83,16 +83,18 @@ type ProductsResponse {
 
 type Address {
   id: ID!
+  userId: String!
   street: String!
   type: AddressType!
   city: String!
   state: String!
   zipCode: String!
   country: String!
-  createdAt: String!
-  updatedAt: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
+"""The type of address"""
 enum AddressType {
   BILLING
   SHIPPING
@@ -202,6 +204,12 @@ type Query {
   currencies(activeOnly: Boolean = false): [Currency!]!
   currency(id: String!): Currency
   currencyByCode(code: String!): Currency
+
+  """Get all addresses for the authenticated user"""
+  myAddresses: [Address!]!
+
+  """Get a specific address by ID (must belong to authenticated user)"""
+  address(id: String!): Address!
 }
 
 input ProductsFilterInput {
@@ -240,6 +248,15 @@ type Mutation {
   createCurrency(input: CreateCurrencyInput!): Currency!
   updateCurrency(id: String!, input: UpdateCurrencyInput!): Currency!
   deleteCurrency(id: String!): Boolean!
+
+  """Create a new address for the authenticated user"""
+  createAddress(input: CreateAddressInput!): Address!
+
+  """Update an address (must belong to authenticated user)"""
+  updateAddress(id: String!, input: UpdateAddressInput!): Address!
+
+  """Delete an address (must belong to authenticated user)"""
+  deleteAddress(id: String!): Address!
 }
 
 input CreateProductInput {
@@ -351,4 +368,22 @@ input UpdateCurrencyInput {
   symbol: String
   decimalPlaces: Int
   isActive: Boolean
+}
+
+input CreateAddressInput {
+  street: String!
+  type: AddressType!
+  city: String!
+  state: String!
+  zipCode: String!
+  country: String!
+}
+
+input UpdateAddressInput {
+  street: String
+  type: AddressType
+  city: String
+  state: String
+  zipCode: String
+  country: String
 }

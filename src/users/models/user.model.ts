@@ -1,6 +1,6 @@
 import { AbstractModel } from '@picnic/utils'
 import { Field, ObjectType, registerEnumType } from '@nestjs/graphql'
-import { Address } from './address.model'
+import { Address } from '../../addresses/models/address.model'
 import { Profile } from './profile.model'
 import { Order } from '../../orders/models/order.model'
 
