@@ -1,10 +1,7 @@
 import { Resolver, Mutation, Args, Query, Context } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserInput } from './dto/create-user.input';
-import { SetPasswordInput } from './dto/set-password.input';
-import { UpdatePasswordInput } from './dto/update-password.input';
-import { UpdateUserRoleInput } from './dto/update-user-role.input';
+import { UpdateUserRoleInput, UpdateUserInput, CreateUserInput, SetPasswordInput, UpdatePasswordInput } from './dto';
 import { User } from './models/user.model';
 import { GqlAuthGuard } from '../auth/gql-auth.guard';
 import { GqlRolesGuard } from '../auth/guards/gql-roles.guard';
@@ -25,6 +22,8 @@ export class UsersResolver {
     }
 
     @Mutation(() => User, { name: 'createUser' })
+    @UseGuards(GqlAuthGuard, GqlRolesGuard)
+    @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
     async createUser(
         @Args('input', { type: () => CreateUserInput }) input: CreateUserInput,
     ): Promise<User> {
@@ -32,13 +31,27 @@ export class UsersResolver {
         return this.usersService.create(input) as any
     }
 
+    @Mutation(() => User, { name: 'updateUser' })
+    @UseGuards(GqlAuthGuard)
+    async updateUser(
+        @Context() context: any,
+        @Args('input', { type: () => UpdateUserInput }) input: UpdateUserInput,
+    ): Promise<User> {
+        const userId = context.req.user.userId
+        return this.usersService.updateUser(userId, input) as any
+    }
+
     @Mutation(() => User, {
         name: 'setPassword',
         description: 'Set a password for a user who does not have one yet'
     })
     async setPassword(
+        @Context() context: any,
         @Args('input', { type: () => SetPasswordInput }) input: SetPasswordInput,
     ): Promise<User> {
+        if (input.userId !== context.req.user.userId) {
+            throw new Error('You are not allowed to perform this action')
+        }
         return this.usersService.setPassword(input.userId, input.password) as any
     }
 
@@ -47,8 +60,12 @@ export class UsersResolver {
         description: 'Update a user\'s password (requires old password verification)'
     })
     async updatePassword(
+        @Context() context: any,
         @Args('input', { type: () => UpdatePasswordInput }) input: UpdatePasswordInput,
     ): Promise<User> {
+        if (input.userId !== context.req.user.userId) {
+            throw new Error('You are not allowed to perform this action')
+        }
         return this.usersService.updatePassword(
             input.userId,
             input.oldPassword,
