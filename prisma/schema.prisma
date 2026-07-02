@@ -188,16 +188,26 @@ enum OrderStatus {
   COMPLETED
 }
 
+enum ShippingMethod {
+  STANDARD
+  EXPRESS
+  OVERNIGHT
+  PICKUP
+  INTERNATIONAL
+  CARGO
+}
+
 model Order {
-  id          String      @id @default(uuid())
-  userId      String
-  orderStatus OrderStatus @default(PAYMENT_REQUIRED)
-  user        User        @relation(fields: [userId], references: [id])
-  channelId   String?
-  channel     Channel?    @relation(fields: [channelId], references: [id])
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  orderItems  OrderItem[]
+  id             String          @id @default(uuid())
+  userId         String
+  orderStatus    OrderStatus     @default(PAYMENT_REQUIRED)
+  shippingMethod ShippingMethod?
+  user           User            @relation(fields: [userId], references: [id])
+  channelId      String?
+  channel        Channel?        @relation(fields: [channelId], references: [id])
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  orderItems     OrderItem[]
 
   @@index([channelId])
 }
