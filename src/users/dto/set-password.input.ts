@@ -5,10 +5,10 @@ import { IsString, MinLength, IsUUID } from 'class-validator'
 export class SetPasswordInput {
     @Field()
     @IsUUID()
-    userId: string
+    userId!: string
 
     @Field()
     @IsString()
     @MinLength(8, { message: 'Password must be at least 8 characters long' })
-    password: string
+    password!: string
 }

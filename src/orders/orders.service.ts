@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
-import { OrderStatus, Prisma } from '@prisma/client'
+import { OrderStatus, ShippingMethod, Prisma } from '@prisma/client'
 
 @Injectable()
 export class OrdersService {
@@ -208,5 +208,51 @@ export class OrdersService {
     })
 
     return updatedCart
+  }
+
+  /**
+   * Update order fields (status, channel, shipping method, etc.)
+   */
+  async updateOrder(
+    userId: string,
+    orderId: string,
+    data: {
+      orderStatus?: OrderStatus
+      shippingMethod?: ShippingMethod
+      channelId?: string
+    },
+  ) {
+    // First verify the order belongs to the user
+    const order = await this.prismaService.order.findFirst({
+      where: {
+        id: orderId,
+        userId,
+      },
+    })
+
+    if (!order) {
+      throw new Error('Order not found or does not belong to user')
+    }
+
+    // Update the order
+    const updatedOrder = await this.prismaService.order.update({
+      where: { id: orderId },
+      data,
+      include: {
+        user: true,
+        channel: true,
+        orderItems: {
+          include: {
+            item: {
+              include: {
+                thumbnail: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    return updatedOrder
   }
 }
