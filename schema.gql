@@ -120,7 +120,8 @@ type OrderItem {
 type Order {
   id: ID!
   user: User!
-  orderStatus: OrderStatus!
+  orderStatus: UpdateOrderStatus!
+  shippingMethod: UpdateShippingMethod
   channelId: String
   channel: Channel
   orderItems: [OrderItem!]!
@@ -128,7 +129,7 @@ type Order {
   createdAt: String!
 }
 
-enum OrderStatus {
+enum UpdateOrderStatus {
   PENDING
   SUBMITTED
   PAYMENT_REQUIRED
@@ -138,6 +139,15 @@ enum OrderStatus {
   SHIPPING
   CANCELLED
   COMPLETED
+}
+
+enum UpdateShippingMethod {
+  STANDARD
+  EXPRESS
+  OVERNIGHT
+  PICKUP
+  INTERNATIONAL
+  CARGO
 }
 
 type User {
@@ -192,7 +202,7 @@ type Query {
 
   """Get current authenticated user information"""
   me: User!
-  orders(status: OrderStatus): [Order!]!
+  orders(status: UpdateOrderStatus): [Order!]!
   categories: [Category!]!
   category(id: String!): Category!
   channels: [Channel!]!
@@ -222,6 +232,7 @@ type Mutation {
   createProduct(input: CreateProductInput!): Product!
   updateProductImages(id: String!, input: UpdateProductImagesInput!): Product!
   createUser(input: CreateUserInput!): User!
+  updateUser(input: UpdateUserInput!): User!
 
   """Set a password for a user who does not have one yet"""
   setPassword(input: SetPasswordInput!): User!
@@ -236,6 +247,7 @@ type Mutation {
   validateOtpAttempt(phoneNumber: String!, code: String!): AuthLoginResponse!
   addItemToCart(input: AddItemToCartInput!): Order!
   removeItemFromCart(input: RemoveItemFromCartInput!): Order!
+  updateOrder(input: UpdateOrderInput!): Order!
   createCategory(input: CreateCategoryInput!): Category!
   updateCategory(id: String!, input: UpdateCategoryInput!): Category!
   deleteCategory(id: String!): Category!
@@ -290,6 +302,11 @@ input CreateUserInput {
   password: String
 }
 
+input UpdateUserInput {
+  email: String
+  name: String
+}
+
 input SetPasswordInput {
   userId: String!
   password: String!
@@ -314,6 +331,13 @@ input AddItemToCartInput {
 
 input RemoveItemFromCartInput {
   productId: String!
+}
+
+input UpdateOrderInput {
+  orderId: String!
+  orderStatus: UpdateOrderStatus
+  shippingMethod: UpdateShippingMethod
+  channelId: String
 }
 
 input CreateCategoryInput {
