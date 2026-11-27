@@ -56,12 +56,66 @@ type ProductPrice {
   currency: Currency
 }
 
+type CatalogPrice {
+  currencyCode: String!
+  currencySymbol: String!
+  amount: String!
+
+  """Price per individual item, as a decimal string."""
+  amountPerItem: String!
+}
+
+type CatalogPackItem {
+  name: String!
+
+  """Whole number of items in the pack."""
+  quantity: Float!
+}
+
+type CatalogVariant {
+  id: ID!
+  name: String!
+  available: Boolean!
+  packContents: [CatalogPackItem!]!
+  prices: [CatalogPrice!]!
+}
+
+type CatalogSellingMode {
+  mode: SellingMode!
+  purchasePolicy: PurchasePolicy!
+
+  """Minimum packs per wholesale variant in the primary category."""
+  minimumPacks: Int
+  variants: [CatalogVariant!]!
+}
+
+enum SellingMode {
+  RETAIL
+  WHOLESALE
+}
+
+enum PurchasePolicy {
+  INSTANT
+  TEAM_VERIFICATION
+}
+
+type CatalogDeliveryConditions {
+  shippingIncludedInPrice: Boolean!
+  destinationRequiredForQuote: Boolean!
+}
+
+type ProductCatalog {
+  sellingModes: [CatalogSellingMode!]!
+  deliveryConditions: CatalogDeliveryConditions!
+}
+
 type Product {
   id: ID!
   name: String!
   slug: String!
   price: String!
   productPrices: [ProductPrice!]
+  catalog: ProductCatalog!
   categoryId: String!
   channelId: String
   channel: Channel
