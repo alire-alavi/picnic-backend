@@ -20,7 +20,11 @@ export class ProductsService {
     channelId?: string
   }): Promise<Product> {
     // Get the first price as the legacy price field (for backward compatibility)
-    const defaultPrice = data.prices[0]?.amount || 0
+    const prices = data.prices.map(({ currencyId, amount }) => ({
+      currencyId,
+      amount,
+    }))
+    const defaultPrice = prices[0]?.amount ?? 0
 
     const product = await this.prisma.product.create({
       data: {
@@ -33,11 +37,18 @@ export class ProductsService {
         categoryId: data.categoryId,
         thumbnailId: data.thumbnailId,
         channelId: data.channelId,
-        productPrices: {
-          create: data.prices.map((price) => ({
-            currencyId: price.currencyId,
-            amount: price.amount,
-          })),
+        productPrices: { create: prices },
+        sellingModes: {
+          create: {
+            mode: 'RETAIL',
+            purchasePolicy: 'INSTANT',
+            variants: {
+              create: {
+                name: data.name,
+                prices: { create: prices },
+              },
+            },
+          },
         },
       },
       include: {

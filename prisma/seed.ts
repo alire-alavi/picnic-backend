@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
@@ -29,7 +29,7 @@ async function main() {
 
   console.log('Seeding products...')
 
-  const products: any[] = []
+  const products: Prisma.ProductUncheckedCreateInput[] = []
 
   // Helper to push products easily
   function add(
@@ -345,11 +345,30 @@ async function main() {
   )
 
   // Insert all products
+  const toman = await prisma.currency.upsert({
+    where: { code: 'IRT' },
+    update: {},
+    create: { code: 'IRT', name: 'Iranian Toman', symbol: 'تومان' },
+  })
   for (const p of products) {
     await prisma.product.upsert({
       where: { id: p.id },
       update: {},
-      create: p,
+      create: {
+        ...p,
+        sellingModes: {
+          create: {
+            mode: 'RETAIL',
+            purchasePolicy: 'INSTANT',
+            variants: {
+              create: {
+                name: p.name,
+                prices: { create: { currencyId: toman.id, amount: p.price } },
+              },
+            },
+          },
+        },
+      },
     })
   }
 
