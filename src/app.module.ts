@@ -18,6 +18,8 @@ import { OrdersModule } from './orders/orders.module'
 import { CategoriesModule } from './categories/categories.module'
 import { ChannelsModule } from './channels/channels.module'
 import { ImagesModule } from './images/images.module'
+import { CurrenciesModule } from './currencies/currencies.module'
+import { AddressesModule } from './addresses/addresses.module'
 
 @Module({
   imports: [
@@ -42,6 +44,8 @@ import { ImagesModule } from './images/images.module'
     CategoriesModule,
     ChannelsModule,
     ImagesModule,
+    CurrenciesModule,
+    AddressesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

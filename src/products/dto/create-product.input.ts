@@ -1,5 +1,7 @@
 import { Field, InputType } from '@nestjs/graphql'
-import { IsString, IsNotEmpty, IsNumber, IsOptional, IsUUID } from 'class-validator'
+import { IsString, IsNotEmpty, IsNumber, IsOptional, IsUUID, IsArray, ValidateNested } from 'class-validator'
+import { Type } from 'class-transformer'
+import { ProductPriceInput } from '../../currencies/dto/product-price.input'
 
 @InputType()
 export class CreateProductInput {
@@ -13,10 +15,11 @@ export class CreateProductInput {
     @IsNotEmpty()
     slug: string
 
-    @Field()
-    @IsNumber()
-    @IsNotEmpty()
-    price: number
+    @Field(() => [ProductPriceInput])
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ProductPriceInput)
+    prices: ProductPriceInput[]
 
     @Field()
     @IsString()

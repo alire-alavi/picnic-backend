@@ -29,6 +29,16 @@ enum ChannelType {
   PARTNER
 }
 
+enum SellingMode {
+  RETAIL
+  WHOLESALE
+}
+
+enum PurchasePolicy {
+  INSTANT
+  TEAM_VERIFICATION
+}
+
 model ProductPrice {
   id         String  @id @default(cuid())
   productId  String
@@ -51,7 +61,8 @@ model Currency {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  ProductPrice ProductPrice[]
+  ProductPrice  ProductPrice[]
+  variantPrices VariantPrice[]
 }
 
 model Channel {
@@ -97,14 +108,16 @@ model Profile {
 }
 
 model Category {
-  id        String    @id @default(uuid())
-  name      String
-  slug      String    @unique
-  imageId   String?   @unique
-  image     Image?    @relation("CategoryImage", fields: [imageId], references: [id])
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  products  Product[]
+  id                    String    @id @default(uuid())
+  name                  String
+  slug                  String    @unique
+  imageId               String?   @unique
+  image                 Image?    @relation("CategoryImage", fields: [imageId], references: [id])
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  products              Product[]
+  /// Minimum number of packs per wholesale variant. Null until configured.
+  wholesaleMinimumPacks Int?
 }
 
 model PricePlan {
@@ -117,27 +130,68 @@ model PricePlan {
 }
 
 model Product {
-  id              String         @id @default(uuid())
+  id              String               @id @default(uuid())
   categoryId      String
-  category        Category       @relation(fields: [categoryId], references: [id])
+  category        Category             @relation(fields: [categoryId], references: [id])
   channelId       String?
-  channel         Channel?       @relation(fields: [channelId], references: [id])
+  channel         Channel?             @relation(fields: [channelId], references: [id])
   seo_title       String
   seo_description String
   seo_keywords    String
   name            String
-  slug            String         @unique
-  price           Decimal        @db.Decimal(10, 2)
-  thumbnailId     String?        @unique
-  thumbnail       Image?         @relation("ProductThumbnail", fields: [thumbnailId], references: [id])
-  sliderImages    Image[]        @relation("ProductSliderImages")
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  slug            String               @unique
+  price           Decimal              @db.Decimal(10, 2)
+  thumbnailId     String?              @unique
+  thumbnail       Image?               @relation("ProductThumbnail", fields: [thumbnailId], references: [id])
+  sliderImages    Image[]              @relation("ProductSliderImages")
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
   comments        Comment[]
   orderItems      OrderItem[]
   productPrices   ProductPrice[]
+  sellingModes    ProductSellingMode[]
 
   @@index([channelId])
+}
+
+model ProductSellingMode {
+  productId      String
+  mode           SellingMode
+  purchasePolicy PurchasePolicy
+  product        Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variants       SellableVariant[]
+
+  @@id([productId, mode])
+}
+
+model SellableVariant {
+  id           String             @id @default(uuid())
+  productId    String
+  mode         SellingMode
+  sellingMode  ProductSellingMode @relation(fields: [productId, mode], references: [productId, mode], onDelete: Cascade)
+  name         String
+  /// Available for sale when active and stock is positive.
+  isActive     Boolean            @default(true)
+  /// Individual sale units in retail and complete packs in wholesale.
+  stock        Int                @default(0)
+  /// Wholesale contents as an array of { name, quantity } objects.
+  packContents Json?
+  prices       VariantPrice[]
+  orderItems   OrderItem[]
+
+  @@unique([id, productId, mode])
+  @@index([productId, mode])
+}
+
+model VariantPrice {
+  variantId  String
+  currencyId String
+  amount     Decimal
+  variant    SellableVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  currency   Currency        @relation(fields: [currencyId], references: [id])
+
+  @@id([variantId, currencyId])
+  @@index([currencyId])
 }
 
 model Image {
@@ -167,13 +221,23 @@ model Comment {
 }
 
 model OrderItem {
-  id       String  @id @default(uuid())
-  itemId   String
-  item     Product @relation(fields: [itemId], references: [id])
-  quantity Int
-  price    Decimal @db.Decimal(10, 2)
-  order    Order?  @relation(fields: [orderId], references: [id])
-  orderId  String?
+  id           String           @id @default(uuid())
+  itemId       String
+  item         Product          @relation(fields: [itemId], references: [id])
+  quantity     Int
+  price        Decimal
+  order        Order?           @relation(fields: [orderId], references: [id])
+  orderId      String?
+  // Product-only lines retain their original price and quantity. Variant lines
+  // capture the sale terms so later catalog edits cannot reinterpret them.
+  variantId    String?
+  sellingMode  SellingMode?
+  variant      SellableVariant? @relation(fields: [variantId, itemId, sellingMode], references: [id, productId, mode], onDelete: Restrict, onUpdate: Restrict)
+  variantName  String?
+  packContents Json?
+  currencyCode String?
+
+  @@index([variantId, itemId, sellingMode])
 }
 
 enum OrderStatus {
@@ -188,16 +252,26 @@ enum OrderStatus {
   COMPLETED
 }
 
+enum ShippingMethod {
+  STANDARD
+  EXPRESS
+  OVERNIGHT
+  PICKUP
+  INTERNATIONAL
+  CARGO
+}
+
 model Order {
-  id          String      @id @default(uuid())
-  userId      String
-  orderStatus OrderStatus @default(PAYMENT_REQUIRED)
-  user        User        @relation(fields: [userId], references: [id])
-  channelId   String?
-  channel     Channel?    @relation(fields: [channelId], references: [id])
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  orderItems  OrderItem[]
+  id             String          @id @default(uuid())
+  userId         String
+  orderStatus    OrderStatus     @default(PAYMENT_REQUIRED)
+  shippingMethod ShippingMethod?
+  user           User            @relation(fields: [userId], references: [id])
+  channelId      String?
+  channel        Channel?        @relation(fields: [channelId], references: [id])
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  orderItems     OrderItem[]
 
   @@index([channelId])
 }

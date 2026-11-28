@@ -3,6 +3,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import type { Cache } from 'cache-manager'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateUserInput } from './dto/create-user.input'
+import { UpdateUserInput } from './dto/update-user.input'
 import { randomBytes, scryptSync, timingSafeEqual } from 'crypto'
 import { UserRole } from '@prisma/client'
 
@@ -195,6 +196,35 @@ export class UsersService {
     })
 
     return updated
+  }
+
+  async updateUser(userId: string, input: UpdateUserInput) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } })
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    if (input.email && input.email !== user.email) {
+      const existing = await this.prisma.user.findUnique({
+        where: { email: input.email },
+      })
+      if (existing) {
+        throw new BadRequestException('Email already in use')
+      }
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(input.email !== undefined && { email: input.email }),
+        ...(input.name !== undefined && { name: input.name }),
+      },
+      include: {
+        addresses: true,
+        orders: true,
+        profile: true,
+      },
+    })
   }
 
   /**

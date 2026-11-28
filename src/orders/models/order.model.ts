@@ -3,13 +3,23 @@ import { Field, ObjectType, registerEnumType } from '@nestjs/graphql'
 import { User } from '../../users/models/user.model'
 import { Product } from '../../products/models/product.model'
 import { Channel } from '../../channels/models/channel.model'
-import { OrderStatus as PrismaOrderStatus } from '@prisma/client'
+import {
+  OrderStatus as PrismaOrderStatus,
+  ShippingMethod as PrismaShippingMethod
+} from '@prisma/client'
 
 // Re-export Prisma's OrderStatus enum for GraphQL
 export const OrderStatus = PrismaOrderStatus
 
 registerEnumType(OrderStatus, {
   name: 'OrderStatus',
+})
+
+// Re-export Prisma's ShippingMethod enum for GraphQL
+export const ShippingMethod = PrismaShippingMethod
+
+registerEnumType(ShippingMethod, {
+  name: 'ShippingMethod',
 })
 
 @ObjectType()
@@ -31,6 +41,9 @@ export class Order extends AbstractModel {
 
   @Field(() => OrderStatus)
   orderStatus: typeof OrderStatus
+
+  @Field(() => ShippingMethod, { nullable: true })
+  shippingMethod?: typeof ShippingMethod
 
   @Field({ nullable: true })
   channelId?: string

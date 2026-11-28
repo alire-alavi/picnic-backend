@@ -6,13 +6,16 @@ import {
   Int,
   ObjectType,
   Field,
+  Parent,
+  ResolveField,
 } from '@nestjs/graphql'
-import { UseGuards } from '@nestjs/common'
+import { BadRequestException, UseGuards } from '@nestjs/common'
 import { ProductsFilterInput } from './dto/products.input'
 import { CreateProductInput } from './dto/create-product.input'
 import { UpdateProductImagesInput } from './dto/update-product-images.input'
 import { ProductsService } from './products.service'
 import { Product } from './models/product.model'
+import { ProductCatalog } from './models/product-catalog.model'
 import { GqlAuthGuard } from '../auth/gql-auth.guard'
 import { GqlRolesGuard } from '../auth/guards/gql-roles.guard'
 import { Roles, UserRole } from '../auth/decorators/roles.decorator'
@@ -32,21 +35,26 @@ class ProductsResponse {
   offset: number
 }
 
-@Resolver()
+@Resolver(() => Product)
 export class ProductsResolver {
-  constructor(private readonly productsService: ProductsService) { }
+  constructor(private readonly productsService: ProductsService) {}
+
+  @ResolveField(() => ProductCatalog)
+  catalog(@Parent() product: Product): Promise<ProductCatalog> {
+    return this.productsService.getCatalog(product.id)
+  }
 
   @Mutation(() => Product)
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   async createProduct(
     @Args('input', { type: () => CreateProductInput })
-    input: CreateProductInput
+    input: CreateProductInput,
   ) {
     return this.productsService.create({
       name: input.name,
       slug: input.slug,
-      price: input.price,
+      prices: input.prices,
       seo_title: input.seo_title,
       seo_description: input.seo_description,
       seo_keywords: input.seo_keywords,
@@ -67,10 +75,10 @@ export class ProductsResolver {
   ): Promise<ProductsResponse> {
     const filterObj = filter
       ? {
-        category: filter.category,
-        priceLte: filter.priceLte,
-        priceGte: filter.priceGte,
-      }
+          category: filter.category,
+          priceLte: filter.priceLte,
+          priceGte: filter.priceGte,
+        }
       : {}
 
     const [items, total] = await Promise.all([
@@ -87,8 +95,17 @@ export class ProductsResolver {
   }
 
   @Query(() => Product, { name: 'product' })
-  async getSingleProduct(@Args('id', { type: () => String }) id: string) {
-    return this.productsService.getById(id)
+  async getSingleProduct(
+    @Args('id', { type: () => String, nullable: true }) id?: string,
+    @Args('slug', { type: () => String, nullable: true }) slug?: string,
+  ) {
+    if (!id && !slug) {
+      throw new BadRequestException('You need to query the product')
+    } else if (id) {
+      return this.productsService.getById(id)
+    } else if (slug) {
+      return this.productsService.getBySlug(slug)
+    }
   }
 
   @Mutation(() => Product)
@@ -96,7 +113,8 @@ export class ProductsResolver {
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   async updateProductImages(
     @Args('id', { type: () => String }) id: string,
-    @Args('input', { type: () => UpdateProductImagesInput }) input: UpdateProductImagesInput,
+    @Args('input', { type: () => UpdateProductImagesInput })
+    input: UpdateProductImagesInput,
   ) {
     return this.productsService.updateImages(id, {
       thumbnailId: input.thumbnailId,

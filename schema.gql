@@ -5,8 +5,8 @@
 type Image {
   id: ID!
   url: String!
-  md: String!
-  sm: String!
+  md: String
+  sm: String
   altText: String
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -37,11 +37,85 @@ enum ChannelType {
   PARTNER
 }
 
+type Currency {
+  id: ID!
+  code: String!
+  name: String!
+  symbol: String!
+  decimalPlaces: Int!
+  isActive: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ProductPrice {
+  id: String!
+  productId: String!
+  currencyId: String!
+  amount: String!
+  currency: Currency
+}
+
+type CatalogPrice {
+  currencyCode: String!
+  currencySymbol: String!
+  amount: String!
+
+  """Price per individual item, as a decimal string."""
+  amountPerItem: String!
+}
+
+type CatalogPackItem {
+  name: String!
+
+  """Whole number of items in the pack."""
+  quantity: Float!
+}
+
+type CatalogVariant {
+  id: ID!
+  name: String!
+  available: Boolean!
+  packContents: [CatalogPackItem!]!
+  prices: [CatalogPrice!]!
+}
+
+type CatalogSellingMode {
+  mode: SellingMode!
+  purchasePolicy: PurchasePolicy!
+
+  """Minimum packs per wholesale variant in the primary category."""
+  minimumPacks: Int
+  variants: [CatalogVariant!]!
+}
+
+enum SellingMode {
+  RETAIL
+  WHOLESALE
+}
+
+enum PurchasePolicy {
+  INSTANT
+  TEAM_VERIFICATION
+}
+
+type CatalogDeliveryConditions {
+  shippingIncludedInPrice: Boolean!
+  destinationRequiredForQuote: Boolean!
+}
+
+type ProductCatalog {
+  sellingModes: [CatalogSellingMode!]!
+  deliveryConditions: CatalogDeliveryConditions!
+}
+
 type Product {
   id: ID!
   name: String!
   slug: String!
   price: String!
+  productPrices: [ProductPrice!]
+  catalog: ProductCatalog!
   categoryId: String!
   channelId: String
   channel: Channel
@@ -63,16 +137,18 @@ type ProductsResponse {
 
 type Address {
   id: ID!
+  userId: String!
   street: String!
   type: AddressType!
   city: String!
   state: String!
   zipCode: String!
   country: String!
-  createdAt: String!
-  updatedAt: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
+"""The type of address"""
 enum AddressType {
   BILLING
   SHIPPING
@@ -98,7 +174,8 @@ type OrderItem {
 type Order {
   id: ID!
   user: User!
-  orderStatus: OrderStatus!
+  orderStatus: UpdateOrderStatus!
+  shippingMethod: UpdateShippingMethod
   channelId: String
   channel: Channel
   orderItems: [OrderItem!]!
@@ -106,7 +183,7 @@ type Order {
   createdAt: String!
 }
 
-enum OrderStatus {
+enum UpdateOrderStatus {
   PENDING
   SUBMITTED
   PAYMENT_REQUIRED
@@ -116,6 +193,15 @@ enum OrderStatus {
   SHIPPING
   CANCELLED
   COMPLETED
+}
+
+enum UpdateShippingMethod {
+  STANDARD
+  EXPRESS
+  OVERNIGHT
+  PICKUP
+  INTERNATIONAL
+  CARGO
 }
 
 type User {
@@ -166,11 +252,11 @@ type ImagesResponse {
 
 type Query {
   products(productFilter: ProductsFilterInput, limit: Int = 20, offset: Int = 0): ProductsResponse!
-  product(id: String!): Product!
+  product(id: String, slug: String): Product!
 
   """Get current authenticated user information"""
   me: User!
-  orders(status: OrderStatus): [Order!]!
+  orders(status: UpdateOrderStatus): [Order!]!
   categories: [Category!]!
   category(id: String!): Category!
   channels: [Channel!]!
@@ -179,6 +265,15 @@ type Query {
   channelBySlug(slug: String!): Channel
   images(limit: Int = 20, offset: Int = 0): ImagesResponse!
   image(id: String!): Image
+  currencies(activeOnly: Boolean = false): [Currency!]!
+  currency(id: String!): Currency
+  currencyByCode(code: String!): Currency
+
+  """Get all addresses for the authenticated user"""
+  myAddresses: [Address!]!
+
+  """Get a specific address by ID (must belong to authenticated user)"""
+  address(id: String!): Address!
 }
 
 input ProductsFilterInput {
@@ -191,6 +286,7 @@ type Mutation {
   createProduct(input: CreateProductInput!): Product!
   updateProductImages(id: String!, input: UpdateProductImagesInput!): Product!
   createUser(input: CreateUserInput!): User!
+  updateUser(input: UpdateUserInput!): User!
 
   """Set a password for a user who does not have one yet"""
   setPassword(input: SetPasswordInput!): User!
@@ -204,6 +300,8 @@ type Mutation {
   loginWithPhoneNumber(phoneNumber: String!): SendOtpResponse!
   validateOtpAttempt(phoneNumber: String!, code: String!): AuthLoginResponse!
   addItemToCart(input: AddItemToCartInput!): Order!
+  removeItemFromCart(input: RemoveItemFromCartInput!): Order!
+  updateOrder(input: UpdateOrderInput!): Order!
   createCategory(input: CreateCategoryInput!): Category!
   updateCategory(id: String!, input: UpdateCategoryInput!): Category!
   deleteCategory(id: String!): Category!
@@ -213,18 +311,35 @@ type Mutation {
   createImage(input: CreateImageInput!): Image!
   updateImage(id: String!, input: UpdateImageInput!): Image!
   deleteImage(id: String!): Image!
+  createCurrency(input: CreateCurrencyInput!): Currency!
+  updateCurrency(id: String!, input: UpdateCurrencyInput!): Currency!
+  deleteCurrency(id: String!): Boolean!
+
+  """Create a new address for the authenticated user"""
+  createAddress(input: CreateAddressInput!): Address!
+
+  """Update an address (must belong to authenticated user)"""
+  updateAddress(id: String!, input: UpdateAddressInput!): Address!
+
+  """Delete an address (must belong to authenticated user)"""
+  deleteAddress(id: String!): Address!
 }
 
 input CreateProductInput {
   name: String!
   slug: String!
-  price: Float!
+  prices: [ProductPriceInput!]!
   seo_title: String!
   seo_description: String!
   seo_keywords: String!
   categoryId: String!
   channelId: String
   thumbnailId: String
+}
+
+input ProductPriceInput {
+  currencyId: String!
+  amount: Float!
 }
 
 input UpdateProductImagesInput {
@@ -239,6 +354,11 @@ input CreateUserInput {
 
   """Password is optional. Can be set later using setPassword mutation."""
   password: String
+}
+
+input UpdateUserInput {
+  email: String
+  name: String
 }
 
 input SetPasswordInput {
@@ -260,6 +380,17 @@ input UpdateUserRoleInput {
 input AddItemToCartInput {
   productId: String!
   quantity: Int! = 1
+  channelId: String
+}
+
+input RemoveItemFromCartInput {
+  productId: String!
+}
+
+input UpdateOrderInput {
+  orderId: String!
+  orderStatus: UpdateOrderStatus
+  shippingMethod: UpdateShippingMethod
   channelId: String
 }
 
@@ -300,4 +431,37 @@ input CreateImageInput {
 input UpdateImageInput {
   url: String
   altText: String
+}
+
+input CreateCurrencyInput {
+  code: String!
+  name: String!
+  symbol: String!
+  decimalPlaces: Int! = 2
+  isActive: Boolean! = true
+}
+
+input UpdateCurrencyInput {
+  name: String
+  symbol: String
+  decimalPlaces: Int
+  isActive: Boolean
+}
+
+input CreateAddressInput {
+  street: String!
+  type: AddressType!
+  city: String!
+  state: String!
+  zipCode: String!
+  country: String!
+}
+
+input UpdateAddressInput {
+  street: String
+  type: AddressType
+  city: String
+  state: String
+  zipCode: String
+  country: String
 }
