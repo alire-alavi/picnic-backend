@@ -6,6 +6,8 @@ import {
   Int,
   ObjectType,
   Field,
+  Parent,
+  ResolveField,
 } from '@nestjs/graphql'
 import { BadRequestException, UseGuards } from '@nestjs/common'
 import { ProductsFilterInput } from './dto/products.input'
@@ -13,6 +15,7 @@ import { CreateProductInput } from './dto/create-product.input'
 import { UpdateProductImagesInput } from './dto/update-product-images.input'
 import { ProductsService } from './products.service'
 import { Product } from './models/product.model'
+import { ProductCatalog } from './models/product-catalog.model'
 import { GqlAuthGuard } from '../auth/gql-auth.guard'
 import { GqlRolesGuard } from '../auth/guards/gql-roles.guard'
 import { Roles, UserRole } from '../auth/decorators/roles.decorator'
@@ -32,9 +35,14 @@ class ProductsResponse {
   offset: number
 }
 
-@Resolver()
+@Resolver(() => Product)
 export class ProductsResolver {
   constructor(private readonly productsService: ProductsService) {}
+
+  @ResolveField(() => ProductCatalog)
+  catalog(@Parent() product: Product): Promise<ProductCatalog> {
+    return this.productsService.getCatalog(product.id)
+  }
 
   @Mutation(() => Product)
   @UseGuards(GqlAuthGuard, GqlRolesGuard)

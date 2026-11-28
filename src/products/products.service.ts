@@ -3,10 +3,90 @@ import { Prisma } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { ProductsFilter } from './dto/products.interface'
 import { Product } from './models/product.model'
+import { CatalogPackItem, ProductCatalog } from './models/product-catalog.model'
 
 @Injectable()
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async getCatalog(productId: string): Promise<ProductCatalog> {
+    const product = await this.prisma.product.findUniqueOrThrow({
+      where: { id: productId },
+      select: {
+        category: { select: { wholesaleMinimumPacks: true } },
+        sellingModes: {
+          orderBy: { mode: 'asc' },
+          include: {
+            variants: {
+              where: { isActive: true },
+              orderBy: [{ name: 'asc' }, { id: 'asc' }],
+              include: {
+                prices: {
+                  where: { currency: { isActive: true } },
+                  orderBy: { currency: { code: 'asc' } },
+                  include: { currency: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    return {
+      deliveryConditions: {
+        shippingIncludedInPrice: false,
+        destinationRequiredForQuote: true,
+      },
+      sellingModes: product.sellingModes
+        .filter(({ variants }) => variants.length > 0)
+        .map(({ mode, purchasePolicy, variants }) => {
+          const wholesale = mode === 'WHOLESALE'
+          const minimumPacks = wholesale
+            ? product.category.wholesaleMinimumPacks
+            : null
+          const minimumStock = wholesale ? minimumPacks : 1
+
+          return {
+            mode,
+            purchasePolicy,
+            minimumPacks,
+            variants: variants.map(
+              ({ id, name, stock, packContents, prices }) => {
+                // The database enforces the contents shape for wholesale packs.
+                const contents = wholesale
+                  ? (packContents as unknown as CatalogPackItem[])
+                  : []
+                const itemsPerSale = wholesale
+                  ? contents.reduce(
+                      (total, item) => total.plus(item.quantity),
+                      new Prisma.Decimal(0),
+                    )
+                  : 1
+
+                return {
+                  id,
+                  name,
+                  available:
+                    minimumStock !== null &&
+                    stock >= minimumStock &&
+                    prices.length > 0,
+                  packContents: contents,
+                  prices: prices.map(({ amount, currency }) => ({
+                    currencyCode: currency.code,
+                    currencySymbol: currency.symbol,
+                    amount: amount.toFixed(),
+                    amountPerItem: wholesale
+                      ? amount.div(itemsPerSale).toFixed()
+                      : amount.toFixed(),
+                  })),
+                }
+              },
+            ),
+          }
+        }),
+    }
+  }
 
   async create(data: {
     name: string
@@ -98,7 +178,7 @@ export class ProductsService {
 
     const products = await this.prisma.product.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
       take: limit || 20,
       skip: offset || 0,
       include: {
